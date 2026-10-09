@@ -1,3 +1,4 @@
+import { apiErrorMessage } from '../../utils/apiError';
 import { formatDate } from '../../utils/formatDate';
 import DataTable from '../../components/table/DataTable';
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
@@ -312,12 +313,12 @@ const ConsultationsPage = () => {
             setAddModalOpen(false);
             resetCreateForm();
             fetchConsultations();
-        } catch (error: any) {
+        } catch (error) {
             console.error('Failed to create consultation', error);
             Swal.fire({
                 icon: 'error',
                 title: 'Không thể tạo mới',
-                text: error?.response?.data?.message || 'Vui lòng thử lại.',
+                text: apiErrorMessage(error, 'Vui lòng thử lại.'),
             });
         }
     };
@@ -355,12 +356,12 @@ const ConsultationsPage = () => {
             });
             closeDetailModal();
             fetchConsultations();
-        } catch (error: any) {
+        } catch (error) {
             console.error('Failed to update consultation', error);
             Swal.fire({
                 icon: 'error',
                 title: 'Không thể cập nhật',
-                text: error?.response?.data?.message || 'Vui lòng thử lại.',
+                text: apiErrorMessage(error, 'Vui lòng thử lại.'),
             });
         }
     };
@@ -388,12 +389,12 @@ const ConsultationsPage = () => {
                 showConfirmButton: false,
             });
             fetchConsultations();
-        } catch (error: any) {
+        } catch (error) {
             console.error('Failed to delete consultation', error);
             Swal.fire({
                 icon: 'error',
                 title: 'Không thể xóa',
-                text: error?.response?.data?.message || 'Vui lòng thử lại.',
+                text: apiErrorMessage(error, 'Vui lòng thử lại.'),
             });
         }
     };

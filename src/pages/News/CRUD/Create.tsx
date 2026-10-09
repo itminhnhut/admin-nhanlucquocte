@@ -1,3 +1,4 @@
+import { apiErrorMessage } from '../../../utils/apiError';
 import { useForm } from 'react-hook-form';
 import http from '../../../utils/http';
 import Swal from 'sweetalert2';
@@ -227,11 +228,11 @@ const NewsForm = () => {
                 setEditorRevision((revision) => revision + 1);
 
                 // Ô ảnh đại diện tự dựng xem trước từ giá trị trong form
-            } catch (error: any) {
+            } catch (error) {
                 Swal.fire({
                     icon: 'error',
                     title: 'Lỗi',
-                    text: error?.response?.data?.message || 'Không thể tải dữ liệu tin tức.',
+                    text: apiErrorMessage(error, 'Không thể tải dữ liệu tin tức.'),
                 });
                 navigate('/news');
             } finally {
@@ -357,11 +358,11 @@ const NewsForm = () => {
             });
 
             navigate('/news');
-        } catch (error: any) {
+        } catch (error) {
             Swal.fire({
                 icon: 'error',
                 title: 'Lỗi',
-                text: error?.response?.data?.message || 'Có lỗi xảy ra. Vui lòng thử lại.',
+                text: apiErrorMessage(error, 'Có lỗi xảy ra. Vui lòng thử lại.'),
             });
         } finally {
             setLoading(false);

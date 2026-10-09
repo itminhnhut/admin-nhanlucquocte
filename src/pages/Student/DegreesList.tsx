@@ -1,3 +1,4 @@
+import { apiErrorMessage } from '../../utils/apiError';
 import { formatDate, formatGradYear, isOddGradYear } from '../../utils/formatDate';
 import 'flatpickr/dist/flatpickr.css';
 import DataTable from '../../components/table/DataTable';
@@ -125,12 +126,12 @@ const PAGE_SIZES = [10];
                 showConfirmButton: false,
             });
             fetchDegrees(page, pageSize, search);
-        } catch (error: any) {
+        } catch (error) {
             console.error('Failed to delete degree:', error);
             Swal.fire({
                 icon: 'error',
                 title: 'Không thể xóa',
-                text: error?.response?.data?.message || 'Vui lòng thử lại.',
+                text: apiErrorMessage(error, 'Vui lòng thử lại.'),
             });
         }
     };

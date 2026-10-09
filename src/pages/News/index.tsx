@@ -65,7 +65,7 @@ const NewsTables = () => {
 
             setRecords(res.data ?? []);
             setTotal(res.meta?.total ?? 0);
-        } catch (error: any) {
+        } catch (error) {
             // Nếu là lỗi do bị cancel thì bỏ qua
             if (error?.name === 'CanceledError' || error?.message === 'canceled' || error?.code === 'ERR_CANCELED') {
                 return;

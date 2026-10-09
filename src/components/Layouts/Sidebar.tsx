@@ -24,22 +24,9 @@ const Sidebar = () => {
     const dispatch = useDispatch();
     const { t } = useTranslation();
 
-    useEffect(() => {
-        const selector = document.querySelector('.sidebar ul a[href="' + window.location.pathname + '"]');
-        if (selector) {
-            selector.classList.add('active');
-            const ul: any = selector.closest('ul.sub-menu');
-            if (ul) {
-                let ele: any = ul.closest('li.menu').querySelectorAll('.nav-link') || [];
-                if (ele.length) {
-                    ele = ele[0];
-                    setTimeout(() => {
-                        ele.click();
-                    });
-                }
-            }
-        }
-    }, []);
+    // NavLink của react-router tự gắn lớp 'active', menu lại phẳng (không có menu con)
+    // nên khối tìm 'ul.sub-menu' của template là code chết, đã bỏ.
+
 
     useEffect(() => {
         if (window.innerWidth < 1024 && themeConfig.sidebar) {

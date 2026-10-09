@@ -248,7 +248,7 @@ function ToolbarPlugin({ uploading, setUploading }: { uploading: boolean; setUpl
             const url = await uploadNewsImage(file);
             const suggestedAlt = file.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ');
             editor.dispatchCommand(INSERT_IMAGE_COMMAND, { src: url, altText: suggestedAlt });
-        } catch (error: any) {
+        } catch (error) {
             Swal.fire({ icon: 'error', title: 'Lỗi', text: error?.message || 'Upload ảnh thất bại. Vui lòng thử lại.' });
         } finally {
             setUploading(false);

@@ -32,7 +32,7 @@ function ImagePastePlugin({ setUploading }: { setUploading: (value: boolean) => 
                                 const altText = file.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ');
                                 editor.dispatchCommand(INSERT_IMAGE_COMMAND, { src: url, altText });
                             }
-                        } catch (error: any) {
+                        } catch (error) {
                             Swal.fire({ icon: 'error', title: 'Lỗi', text: error?.message || 'Không thể paste ảnh. Vui lòng thử lại.' });
                         } finally {
                             setUploading(false);

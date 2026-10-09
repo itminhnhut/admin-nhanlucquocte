@@ -1,3 +1,4 @@
+import { apiErrorMessage } from '../../utils/apiError';
 import { formatDate } from '../../utils/formatDate';
 import Flatpickr from 'react-flatpickr';
 import 'flatpickr/dist/flatpickr.css';
@@ -54,8 +55,6 @@ const Attendance = () => {
         phone?: string;
         cccd?: string;
     } | null>(null);
-
-    console.log(editingAttendance);
     // Fetch student info
     useEffect(() => {
         if (!studentIdParam) return;
@@ -175,12 +174,12 @@ const PAGE_SIZES = [10];
                 note: '',
             });
             fetchAttendances();
-        } catch (error: any) {
+        } catch (error) {
             console.error('Error submitting attendance form:', error);
             Swal.fire({
                 icon: 'error',
                 title: 'Lỗi',
-                text: error?.response?.data?.message || 'Có lỗi xảy ra. Vui lòng thử lại.',
+                text: apiErrorMessage(error, 'Có lỗi xảy ra. Vui lòng thử lại.'),
             });
         }
     };
@@ -301,7 +300,7 @@ const PAGE_SIZES = [10];
                                 },
                                 {
                                     key: 'action',
-                                    title: 'Action',
+                                    title: 'Thao tác',
                                     align: 'center',
                                     render: (attendance: AttendanceRecord) => (
                                         <div className="flex items-center w-max mx-auto gap-2">
@@ -350,11 +349,11 @@ const PAGE_SIZES = [10];
                                                                 });
 
                                                                 fetchAttendances();
-                                                            } catch (error: any) {
+                                                            } catch (error) {
                                                                 Swal.fire({
                                                                     icon: 'error',
                                                                     title: 'Lỗi',
-                                                                    text: error?.response?.data?.message || 'Không thể xóa. Vui lòng thử lại.',
+                                                                    text: apiErrorMessage(error, 'Không thể xóa. Vui lòng thử lại.'),
                                                                 });
                                                             }
                                                         }

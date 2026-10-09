@@ -1,3 +1,4 @@
+import { apiErrorMessage } from '../../utils/apiError';
 import { formatDate } from '../../utils/formatDate';
 import Flatpickr from 'react-flatpickr';
 import 'flatpickr/dist/flatpickr.css';
@@ -136,7 +137,6 @@ const StudentsTables = () => {
             });
 
             const students = res.data.map((student) => {
-                console.log(student.fullName, student.degrees?.length > 0);
                 return {
                     ...student,
                     isDegree: student.degrees?.length > 0,
@@ -219,12 +219,12 @@ const StudentsTables = () => {
                 // phone: '',
             });
             fetchStudents();
-        } catch (error: any) {
+        } catch (error) {
             console.error('Error submitting student form:', error);
             Swal.fire({
                 icon: 'error',
                 title: 'Lỗi',
-                text: error?.response?.data?.message || 'Có lỗi xảy ra. Vui lòng thử lại.',
+                text: apiErrorMessage(error, 'Có lỗi xảy ra. Vui lòng thử lại.'),
             });
         }
     };
@@ -271,12 +271,12 @@ const StudentsTables = () => {
                 rank: '',
                 yearOfGrad: new Date().getFullYear().toString(),
             });
-        } catch (error: any) {
+        } catch (error) {
             console.error('Error creating degree:', error);
             Swal.fire({
                 icon: 'error',
                 title: 'Lỗi',
-                text: error?.response?.data?.message || 'Không thể lưu thông tin tốt nghiệp. Vui lòng thử lại.',
+                text: apiErrorMessage(error, 'Không thể lưu thông tin tốt nghiệp. Vui lòng thử lại.'),
             });
         } finally {
             setGraduationSubmitting(false);
@@ -437,11 +437,11 @@ const StudentsTables = () => {
                                                                 });
 
                                                                 setGraduationModalOpen(true);
-                                                            } catch (error: any) {
+                                                            } catch (error) {
                                                                 Swal.fire({
                                                                     icon: 'error',
                                                                     title: 'Lỗi',
-                                                                    text: error?.response?.data?.message || 'Không lấy được thông tin tốt nghiệp. Vui lòng thử lại.',
+                                                                    text: apiErrorMessage(error, 'Không lấy được thông tin tốt nghiệp. Vui lòng thử lại.'),
                                                                 });
                                                             }
                                                         }}
@@ -498,11 +498,11 @@ const StudentsTables = () => {
                                                                     showConfirmButton: false,
                                                                 });
                                                                 fetchStudents();
-                                                            } catch (error: any) {
+                                                            } catch (error) {
                                                                 Swal.fire({
                                                                     icon: 'error',
                                                                     title: 'Lỗi',
-                                                                    text: error?.response?.data?.message || 'Không thể xóa. Vui lòng thử lại.',
+                                                                    text: apiErrorMessage(error, 'Không thể xóa. Vui lòng thử lại.'),
                                                                 });
                                                             }
                                                         }

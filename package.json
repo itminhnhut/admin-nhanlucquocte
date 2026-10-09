@@ -12,7 +12,8 @@
         "check:editor": "node scripts/kiem-tra-editor.mjs",
         "check:programs": "node scripts/kiem-tra-nganh.mjs",
         "check:tables": "node scripts/kiem-tra-bang.mjs",
-        "check:drawer": "node scripts/kiem-tra-drawer.mjs"
+        "check:drawer": "node scripts/kiem-tra-drawer.mjs",
+        "soat": "node scripts/soat-loi.mjs"
     },
     "dependencies": {
         "@lexical/code": "^0.48.0",
