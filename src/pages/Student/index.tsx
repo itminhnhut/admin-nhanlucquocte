@@ -638,7 +638,7 @@ const StudentsTables = () => {
             <Drawer
                 open={graduationModalOpen}
                 title="Thông tin tốt nghiệp"
-                saving={false}
+                saving={graduationSubmitting}
                 saveLabel="Lưu tốt nghiệp"
                 onClose={() => setGraduationModalOpen(false)}
                 onSave={handleGraduationSubmit}

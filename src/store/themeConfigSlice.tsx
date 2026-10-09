@@ -1,5 +1,4 @@
 import { createSlice } from '@reduxjs/toolkit';
-import i18next from 'i18next';
 import themeConfig from '../theme.config';
 
 const defaultState = {
@@ -43,7 +42,7 @@ const initialState = {
     rtlClass: localStorage.getItem('rtlClass') || themeConfig.rtlClass,
     animation: localStorage.getItem('animation') || themeConfig.animation,
     navbar: localStorage.getItem('navbar') || themeConfig.navbar,
-    locale: localStorage.getItem('i18nextLng') || themeConfig.locale,
+    locale: themeConfig.locale,
     isDarkMode: false,
     sidebar: localStorage.getItem('sidebar') || defaultState.sidebar,
     semidark: false,
@@ -128,7 +127,6 @@ const themeConfigSlice = createSlice({
         },
         toggleLocale(state, { payload }) {
             payload = payload || state.locale;
-            i18next.changeLanguage(payload);
             state.locale = payload;
         },
         toggleSidebar(state) {

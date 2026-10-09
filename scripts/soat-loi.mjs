@@ -60,6 +60,24 @@ for (const file of files) {
     if (/title: 'Trạng thái'/.test(text) && !/StatusBadge/.test(text)) add(file, 0, 'trạng thái không màu', 'dùng StatusBadge');
 }
 
+// Kiểm khai báo gói: dùng mà không khai, hoặc gói chạy thật lại nằm ở devDependencies
+{
+    const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
+    const declared = new Set([...Object.keys(pkg.dependencies ?? {}), ...Object.keys(pkg.devDependencies ?? {})]);
+    const used = new Set();
+    for (const file of files) {
+        for (const m of readFileSync(file, 'utf8').matchAll(/(?:from|import)\s*\(?\s*['"]([^'"]+)['"]/g)) {
+            const spec = m[1];
+            if (spec.startsWith('.')) continue;
+            used.add(spec.startsWith('@') ? spec.split('/').slice(0, 2).join('/') : spec.split('/')[0]);
+        }
+    }
+    for (const name of [...used].sort()) {
+        if (!declared.has(name)) add('package.json', 0, 'gói chưa khai', `${name}: code dùng nhưng không có trong package.json`);
+        else if (pkg.devDependencies?.[name]) add('package.json', 0, 'gói sai chỗ', `${name}: chạy lúc runtime nhưng khai ở devDependencies`);
+    }
+}
+
 const byRule = new Map();
 for (const p of problems) byRule.set(p.rule, [...(byRule.get(p.rule) ?? []), p]);
 

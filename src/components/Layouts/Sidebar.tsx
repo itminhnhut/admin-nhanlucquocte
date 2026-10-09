@@ -1,5 +1,4 @@
 import PerfectScrollbar from 'react-perfect-scrollbar';
-import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { NavLink, useLocation } from 'react-router-dom';
 import { toggleSidebar } from '../../store/themeConfigSlice';
@@ -22,7 +21,6 @@ const Sidebar = () => {
     const semidark = useSelector((state: IRootState) => state.themeConfig.semidark);
     const location = useLocation();
     const dispatch = useDispatch();
-    const { t } = useTranslation();
 
     // NavLink của react-router tự gắn lớp 'active', menu lại phẳng (không có menu con)
     // nên khối tìm 'ul.sub-menu' của template là code chết, đã bỏ.
