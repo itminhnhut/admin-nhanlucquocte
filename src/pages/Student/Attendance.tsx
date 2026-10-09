@@ -38,6 +38,12 @@ type AttendanceFormValues = {
     note: string;
 };
 
+/** Thông tin học viên hiện ở đầu trang điểm danh */
+type StudentInfo = { fullName: string; studentCode?: string; className?: string; email?: string; phone?: string; cccd?: string };
+
+/** Tham số gửi lên API khi lấy danh sách */
+type QueryParams = Record<string, string | number | boolean | undefined>;
+
 const Attendance = () => {
     const dispatch = useDispatch();
     const { id: studentIdParam } = useParams<{ id: string }>();
@@ -60,8 +66,8 @@ const Attendance = () => {
         if (!studentIdParam) return;
         const fetchStudentInfo = async () => {
             try {
-                const res = await http.get('admin/students/' + studentIdParam);
-                setStudentInfo(res?.data || null);
+                const res = await http.get<{ data?: StudentInfo }>('admin/students/' + studentIdParam);
+                setStudentInfo(res?.data ?? null);
             } catch (error) {
                 setStudentInfo(null);
             }
@@ -98,7 +104,7 @@ const PAGE_SIZES = [10];
         if (!studentIdParam) return;
         setLoading(true);
         try {
-            const params: any = {
+            const params: QueryParams = {
                 page: pageValue,
                 limit: pageSizeValue,
                 studentId: studentIdParam,

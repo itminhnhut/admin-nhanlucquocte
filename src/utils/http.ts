@@ -1,4 +1,4 @@
-import axios, { type AxiosRequestConfig } from 'axios';
+import axios, { type AxiosRequestConfig, type AxiosResponse } from 'axios';
 import Cookies from 'js-cookie';
 import { AUTH_TOKEN_KEY, clearSession } from './auth';
 import { API_URL } from '../configs/env';
@@ -28,7 +28,7 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
     ((response) => {
         return response.data;
-    }) as any,
+    }) as unknown as (response: AxiosResponse) => AxiosResponse,
     (error) => {
         if (error.response?.status === 401) {
             clearSession();
@@ -45,13 +45,13 @@ axiosInstance.interceptors.response.use(
 );
 
 interface HttpInstance {
-    <T = any>(config: AxiosRequestConfig): Promise<T>;
-    get<T = any>(url: string, config?: AxiosRequestConfig): Promise<T>;
-    delete<T = any>(url: string, config?: AxiosRequestConfig): Promise<T>;
-    head<T = any>(url: string, config?: AxiosRequestConfig): Promise<T>;
-    post<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T>;
-    put<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T>;
-    patch<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T>;
+    <T = unknown>(config: AxiosRequestConfig): Promise<T>;
+    get<T = unknown>(url: string, config?: AxiosRequestConfig): Promise<T>;
+    delete<T = unknown>(url: string, config?: AxiosRequestConfig): Promise<T>;
+    head<T = unknown>(url: string, config?: AxiosRequestConfig): Promise<T>;
+    post<T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T>;
+    put<T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T>;
+    patch<T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T>;
 }
 
 const http = axiosInstance as HttpInstance;

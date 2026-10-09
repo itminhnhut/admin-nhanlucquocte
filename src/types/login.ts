@@ -1,6 +1,7 @@
 export type LoginResponse = {
     accessToken: string;
-    admin: any;
+    // Hình dạng do API quyết định; pickAdminInfo() lọc lấy 3 trường cần dùng
+    admin?: unknown;
 };
 
 export type LoginFormValues = {

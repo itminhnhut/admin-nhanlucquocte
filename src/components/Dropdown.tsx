@@ -1,11 +1,22 @@
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { ForwardedRef, ReactNode, forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import type { Placement } from '@popperjs/core';
 import { usePopper } from 'react-popper';
 
-const Dropdown = (props : any, forwardedRef: any) => {
-    const [visibility, setVisibility] = useState<any>(false);
+type DropdownProps = {
+    button: ReactNode;
+    children: ReactNode;
+    btnClassName?: string;
+    placement?: Placement;
+    offset?: [number, number];
+};
 
-    const referenceRef = useRef<any>();
-    const popperRef = useRef<any>();
+export type DropdownHandle = { close: () => void };
+
+const Dropdown = (props: DropdownProps, forwardedRef: ForwardedRef<DropdownHandle>) => {
+    const [visibility, setVisibility] = useState(false);
+
+    const referenceRef = useRef<HTMLButtonElement>(null);
+    const popperRef = useRef<HTMLDivElement>(null);
 
     const { styles, attributes } = usePopper(referenceRef.current, popperRef.current, {
         placement: props.placement || 'bottom-end',
@@ -13,14 +24,15 @@ const Dropdown = (props : any, forwardedRef: any) => {
             {
                 name: 'offset',
                 options: {
-                    offset: props.offset || [(0)],
+                    offset: props.offset ?? [0, 0],
                 },
             },
         ],
     });
 
-    const handleDocumentClick = (event: any) => {
-        if (referenceRef.current?.contains(event.target) || popperRef.current?.contains(event.target)) {
+    const handleDocumentClick = (event: MouseEvent) => {
+        const target = event.target as Node;
+        if (referenceRef.current?.contains(target) || popperRef.current?.contains(target)) {
             return;
         }
 

@@ -32,10 +32,12 @@ type Student = {
     cccd: string;
     dob: string;
     className: string;
+    /** API cũ trả về tên lớp ở field `class`, bản mới trả `className` */
+    class?: string;
     email: string;
     // phone: string;
     createdAt?: string;
-    degrees?: any[];
+    degrees?: unknown[];
     isDegree?: boolean;
 };
 
@@ -55,6 +57,12 @@ type GraduationFormValues = {
     rank: string;
     yearOfGrad: string;
 };
+
+/** Thông tin văn bằng trả về khi xem chi tiết tốt nghiệp */
+type DegreeDetail = { id: number; degreeCode?: string; major?: string; rank?: string; yearOfGrad?: string | number };
+
+/** Tham số gửi lên API khi lấy danh sách */
+type QueryParams = Record<string, string | number | boolean | undefined>;
 
 const StudentsTables = () => {
     const dispatch = useDispatch();
@@ -83,7 +91,7 @@ const StudentsTables = () => {
             try {
                 const res = await http.get<{ data: { id: number; title: string }[] }>('admin/programs?noPaginate=true');
                 setProgramOptions(
-                    (res.data ?? []).map((prog: any) => ({
+                    (res.data ?? []).map((prog: { id: number; title: string }) => ({
                         value: prog.id,
                         label: prog.title,
                     })),
@@ -123,7 +131,7 @@ const StudentsTables = () => {
     const fetchStudents = async (pageValue = page, pageSizeValue = pageSize, searchValue = search) => {
         setLoading(true);
         try {
-            const params: any = {
+            const params: QueryParams = {
                 page: pageValue,
                 limit: pageSizeValue,
             };
@@ -355,7 +363,7 @@ const StudentsTables = () => {
                                     key: 'class',
                                     title: 'Lớp',
                                     sortable: true,
-                                    render: (student) => <span className="whitespace-nowrap">{(student as any).className || (student as any).class || '—'}</span>,
+                                    render: (student) => <span className="whitespace-nowrap">{student.className || student.class || '—'}</span>,
                                 },
                                 {
                                     key: 'dob',
@@ -415,8 +423,8 @@ const StudentsTables = () => {
                                                                 setGraduationMode('view');
 
                                                                 // API trả dạng { data: [...] } nên lấy phần tử đầu tiên
-                                                                const res: any = await http.get(`admin/degrees?studentId=${student.id}`);
-                                                                const detailList: any[] = res.data || [];
+                                                                const res = await http.get<{ data?: DegreeDetail[] }>(`admin/degrees?studentId=${student.id}`);
+                                                                const detailList = res.data ?? [];
                                                                 const degree = detailList.length > 0 ? detailList[0] : null;
 
                                                                 // Gán thông tin sinh viên (không lấy từ degree vì API trả student riêng)
@@ -464,7 +472,7 @@ const StudentsTables = () => {
                                                             // dob từ API có dạng ISO, cắt lại còn yyyy-MM-dd cho form
                                                             dob: student.dob ? String(student.dob).slice(0, 10) : '',
                                                             // BE đang trả field `class`, còn form dùng `className`
-                                                            className: (student as any).className || (student as any).class || '',
+                                                            className: student.className || student.class || '',
                                                         });
                                                         setAddModalOpen(true);
                                                     }}

@@ -27,6 +27,9 @@ type AttendanceRecord = {
 };
 
 // Có mặt xanh, đi trễ vàng, vắng mặt đỏ — nhìn lướt là thấy buổi nào có vấn đề
+/** Tham số gửi lên API khi lấy danh sách */
+type QueryParams = Record<string, string | number | boolean | undefined>;
+
 const ATTENDANCE_LABELS: Record<string, string> = { PRESENT: 'Có mặt', ABSENT: 'Vắng mặt', LATE: 'Đi trễ' };
 const ATTENDANCE_TONES: Record<string, BadgeTone> = { PRESENT: 'ok', ABSENT: 'brand', LATE: 'warn' };
 
@@ -45,7 +48,7 @@ const AttendanceList = () => {
     const fetchAttendances = async (pageValue = page, pageSizeValue = pageSize, searchValue = search) => {
         setLoading(true);
         try {
-            const params: any = {
+            const params: QueryParams = {
                 page: pageValue,
                 limit: pageSizeValue,
             };

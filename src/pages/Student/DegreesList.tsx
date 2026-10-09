@@ -32,6 +32,9 @@ type DegreeRecord = {
     createdAt?: string;
 };
 
+/** Tham số gửi lên API khi lấy danh sách */
+type QueryParams = Record<string, string | number | boolean | undefined>;
+
 const DegreesList = () => {
     const [degrees, setDegrees] = useState<DegreeRecord[]>([]);
     const [total, setTotal] = useState(0);
@@ -54,7 +57,7 @@ const PAGE_SIZES = [10];
     const fetchDegrees = async (pageValue = page, pageSizeValue = pageSize, searchValue = search) => {
         setLoading(true);
         try {
-            const params: any = {
+            const params: QueryParams = {
                 page: pageValue,
                 limit: pageSizeValue,
             };
