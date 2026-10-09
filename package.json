@@ -11,7 +11,8 @@
         "test": "node --test tests/*.test.mjs",
         "check:editor": "node scripts/kiem-tra-editor.mjs",
         "check:programs": "node scripts/kiem-tra-nganh.mjs",
-        "check:tables": "node scripts/kiem-tra-bang.mjs"
+        "check:tables": "node scripts/kiem-tra-bang.mjs",
+        "check:drawer": "node scripts/kiem-tra-drawer.mjs"
     },
     "dependencies": {
         "@lexical/code": "^0.48.0",

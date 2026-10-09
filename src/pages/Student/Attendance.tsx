@@ -9,10 +9,10 @@ import { useDispatch } from 'react-redux';
 import IconPencil from '../../components/Icon/IconPencil';
 import IconTrashLines from '../../components/Icon/IconTrashLines';
 import IconPlus from '../../components/Icon/IconPlus';
-import { Dialog, DialogPanel, Transition } from '@headlessui/react';
 import IconX from '../../components/Icon/IconX';
 import { useForm, SubmitHandler, Controller } from 'react-hook-form';
 import IconSearch from '../../components/Icon/IconSearch';
+import Drawer from '../../components/Drawer';
 import http from '../../utils/http';
 import { notBlank, trimStrings } from '../../utils/trimStrings';
 import Swal from 'sweetalert2';
@@ -79,7 +79,7 @@ const Attendance = () => {
         reset,
         getValues,
         control,
-        formState: { errors, isSubmitting },
+        formState: { errors, isSubmitting, isDirty },
     } = useForm<AttendanceFormValues>({
         defaultValues: {
             date: '',
@@ -250,7 +250,7 @@ const Attendance = () => {
                             <div className="flex gap-3">
                                 <button
                                     type="button"
-                                    className="btn btn-primary"
+                                    data-testid="them-diem-danh" className="btn btn-primary"
                                     onClick={() => {
                                         setEditingAttendance(null);
                                         reset({
@@ -385,44 +385,16 @@ const Attendance = () => {
                 </div>
             </div>
 
-            <Transition appear show={addModalOpen} as={Fragment}>
-                <Dialog as="div" open={addModalOpen} onClose={() => setAddModalOpen(false)} className="relative z-[51]">
-                    <Transition.Child as={Fragment} enter="ease-out duration-300" enterFrom="opacity-0" enterTo="opacity-100" leave="ease-in duration-200" leaveFrom="opacity-100" leaveTo="opacity-0">
-                        <div className="fixed inset-0 bg-[black]/60" />
-                    </Transition.Child>
-                    <div className="fixed inset-0 overflow-y-auto">
-                        <div className="flex min-h-full items-center justify-center px-4 py-8">
-                            <Transition.Child
-                                as={Fragment}
-                                enter="ease-out duration-300"
-                                enterFrom="opacity-0 scale-95"
-                                enterTo="opacity-100 scale-100"
-                                leave="ease-in duration-200"
-                                leaveFrom="opacity-100 scale-100"
-                                leaveTo="opacity-0 scale-95"
-                            >
-                                <DialogPanel className="panel border-0 p-0 rounded-lg overflow-hidden w-full max-w-lg text-black dark:text-white-dark">
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setAddModalOpen(false);
-                                            setEditingAttendance(null);
-                                            reset({
-                                                date: '',
-                                                status: 'PRESENT',
-                                                subject: '',
-                                                note: '',
-                                            });
-                                        }}
-                                        className="absolute top-4 ltr:right-4 rtl:left-4 text-gray-400 hover:text-gray-800 dark:hover:text-gray-600 outline-none"
-                                    >
-                                        <IconX />
-                                    </button>
-                                    <div className="text-lg font-medium bg-[#fbfbfb] dark:bg-[#121c2c] ltr:pl-5 rtl:pr-5 py-3 ltr:pr-[50px] rtl:pl-[50px]">
-                                        {editingAttendance ? 'Chỉnh sửa điểm danh' : 'Thêm điểm danh'}
-                                    </div>
-                                    <div className="p-5">
-                                        <form onSubmit={handleSubmit(onSubmit)}>
+            <Drawer
+                open={addModalOpen}
+                title="Buổi điểm danh"
+                dirty={isDirty}
+                saving={isSubmitting}
+                saveLabel="Lưu điểm danh"
+                onClose={() => setAddModalOpen(false)}
+                onSave={handleSubmit(onSubmit)}
+            >
+
                                             <div className="mb-5">
                                                 <label htmlFor="date">
                                                     Ngày điểm danh <span className="text-red-500">*</span>
@@ -495,18 +467,8 @@ const Attendance = () => {
                                                 >
                                                     Cancel
                                                 </button>
-                                                <button type="submit" className="btn btn-primary ltr:ml-4 rtl:mr-4" disabled={isSubmitting}>
-                                                    {isSubmitting ? (editingAttendance ? 'Đang cập nhật...' : 'Đang lưu...') : editingAttendance ? 'Cập nhật' : 'Lưu'}
-                                                </button>
                                             </div>
-                                        </form>
-                                    </div>
-                                </DialogPanel>
-                            </Transition.Child>
-                        </div>
-                    </div>
-                </Dialog>
-            </Transition>
+            </Drawer>
         </section>
     );
 };

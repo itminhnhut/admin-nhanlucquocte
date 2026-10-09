@@ -2,13 +2,13 @@ import DataTable from '../../components/table/DataTable';
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import Tippy from '@tippyjs/react';
 import 'tippy.js/dist/tippy.css';
-import { Dialog, DialogPanel, Transition } from '@headlessui/react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { useDispatch } from 'react-redux';
 import Swal from 'sweetalert2';
 import IconPlus from '../../components/Icon/IconPlus';
 import IconEye from '../../components/Icon/IconEye';
 import IconTrashLines from '../../components/Icon/IconTrashLines';
+import Drawer from '../../components/Drawer';
 import IconX from '../../components/Icon/IconX';
 import IconSearch from '../../components/Icon/IconSearch';
 import { setPageTitle } from '../../store/themeConfigSlice';
@@ -86,7 +86,7 @@ const ConsultationsPage = () => {
         control: createControl,
         handleSubmit: handleCreateSubmit,
         reset: resetCreateForm,
-        formState: { errors: createErrors, isSubmitting: creating },
+        formState: { errors: createErrors, isSubmitting: creating, isDirty: isCreateDirty },
     } = useForm<ConsultationFormValues>({
         defaultValues: {
             fullName: '',
@@ -105,7 +105,7 @@ const ConsultationsPage = () => {
         control: updateControl,
         handleSubmit: handleUpdateSubmit,
         reset: resetUpdateForm,
-        formState: { errors: updateErrors, isSubmitting: updating },
+        formState: { errors: updateErrors, isSubmitting: updating, isDirty: isUpdateDirty },
     } = useForm<ConsultationFormValues>({
         defaultValues: {
             fullName: '',
@@ -405,7 +405,7 @@ const ConsultationsPage = () => {
                         <p className="text-sm text-white-dark">Quản lý các form tư vấn từ portal client và tạo thủ công.</p>
                     </div>
                     <div className="flex sm:flex-row flex-col sm:items-center sm:gap-3 gap-4 w-full sm:w-auto">
-                        <button type="button" className="btn btn-primary w-full sm:w-auto" onClick={openCreateModal}>
+                        <button type="button" data-testid="them-don" className="btn btn-primary w-full sm:w-auto" onClick={openCreateModal}>
                             <IconPlus className="ltr:mr-2 rtl:ml-2" />
                             Tạo form
                         </button>
@@ -503,41 +503,24 @@ const ConsultationsPage = () => {
             </div>
 
             {/* Modal tạo form tư vấn */}
-            <Transition appear show={addModalOpen} as={Fragment}>
-                <Dialog as="div" open={addModalOpen} onClose={() => setAddModalOpen(false)} className="relative z-[51]">
-                    <Transition.Child as={Fragment} enter="ease-out duration-300" enterFrom="opacity-0" enterTo="opacity-100" leave="ease-in duration-200" leaveFrom="opacity-100" leaveTo="opacity-0">
-                        <div className="fixed inset-0 bg-[black]/60" />
-                    </Transition.Child>
-                    <div className="fixed inset-0 overflow-y-auto">
-                        <div className="flex min-h-full items-center justify-center px-4 py-8">
-                            <Transition.Child
-                                as={Fragment}
-                                enter="ease-out duration-300"
-                                enterFrom="opacity-0 scale-95"
-                                enterTo="opacity-100 scale-100"
-                                leave="ease-in duration-200"
-                                leaveFrom="opacity-100 scale-100"
-                                leaveTo="opacity-0 scale-95"
-                            >
-                                <DialogPanel className="panel border-0 p-0 rounded-lg overflow-hidden w-full max-w-2xl text-black dark:text-white-dark">
-                                    <button
-                                        type="button"
-                                        onClick={() => setAddModalOpen(false)}
-                                        className="absolute top-4 ltr:right-4 rtl:left-4 text-gray-400 hover:text-gray-800 dark:hover:text-gray-600 outline-none"
-                                    >
-                                        <IconX />
-                                    </button>
-                                    <div className="text-lg font-medium bg-[#fbfbfb] dark:bg-[#121c2c] ltr:pl-5 rtl:pr-5 py-3 ltr:pr-[50px] rtl:pl-[50px]">Tạo form tư vấn</div>
-                                    <div className="p-5">
-                                        <form className="grid grid-cols-1 md:grid-cols-2 gap-4" onSubmit={handleCreateSubmit(createConsultation)}>
-                                            <div className="md:col-span-1">
+            <Drawer
+                open={addModalOpen}
+                title="Thêm đơn tư vấn"
+                dirty={isCreateDirty}
+                saving={creating}
+                saveLabel="Lưu đơn"
+                onClose={() => setAddModalOpen(false)}
+                onSave={handleCreateSubmit(createConsultation)}
+            >
+
+                                            <div>
                                                 <label className="block mb-1 font-medium" htmlFor="fullName-create">
                                                     Họ tên <span className="text-red-500">*</span>
                                                 </label>
                                                 <input id="fullName-create" type="text" className="form-input" placeholder="Nhập họ tên" {...registerCreate('fullName', { required: 'Bắt buộc', validate: notBlank('Bắt buộc') })} />
                                                 {createErrors.fullName && <p className="text-sm text-red-500 mt-1">{createErrors.fullName.message}</p>}
                                             </div>
-                                            <div className="md:col-span-1">
+                                            <div>
                                                 <label className="block mb-1 font-medium" htmlFor="phone-create">
                                                     Điện thoại <span className="text-red-500">*</span>
                                                 </label>
@@ -598,54 +581,25 @@ const ConsultationsPage = () => {
                                                     ))}
                                                 </select>
                                             </div>
-                                            <div className="md:col-span-2">
+                                            <div>
                                                 <label className="block mb-1 font-medium" htmlFor="note-create">
                                                     Ghi chú
                                                 </label>
                                                 <textarea id="note-create" rows={3} className="form-textarea" placeholder="Nhập ghi chú" {...registerCreate('note')} />
                                             </div>
-                                            <div className="md:col-span-2">
-                                                <button type="submit" className="btn btn-primary w-full md:w-auto" disabled={creating}>
-                                                    {creating ? 'Đang lưu...' : 'Lưu'}
-                                                </button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </DialogPanel>
-                            </Transition.Child>
-                        </div>
-                    </div>
-                </Dialog>
-            </Transition>
+            </Drawer>
 
             {/* Modal chi tiết tư vấn */}
-            <Transition appear show={detailModalOpen} as={Fragment}>
-                <Dialog as="div" open={detailModalOpen} onClose={closeDetailModal} className="relative z-[51]">
-                    <Transition.Child as={Fragment} enter="ease-out duration-300" enterFrom="opacity-0" enterTo="opacity-100" leave="ease-in duration-200" leaveFrom="opacity-100" leaveTo="opacity-0">
-                        <div className="fixed inset-0 bg-[black]/60" />
-                    </Transition.Child>
-                    <div className="fixed inset-0 overflow-y-auto">
-                        <div className="flex min-h-full items-center justify-center px-4 py-8">
-                            <Transition.Child
-                                as={Fragment}
-                                enter="ease-out duration-300"
-                                enterFrom="opacity-0 scale-95"
-                                enterTo="opacity-100 scale-100"
-                                leave="ease-in duration-200"
-                                leaveFrom="opacity-100 scale-100"
-                                leaveTo="opacity-0 scale-95"
-                            >
-                                <DialogPanel className="panel border-0 p-0 rounded-lg overflow-hidden w-full max-w-2xl text-black dark:text-white-dark">
-                                    <button
-                                        type="button"
-                                        onClick={closeDetailModal}
-                                        className="absolute top-4 ltr:right-4 rtl:left-4 text-gray-400 hover:text-gray-800 dark:hover:text-gray-600 outline-none"
-                                    >
-                                        <IconX />
-                                    </button>
-                                    <div className="text-lg font-medium bg-[#fbfbfb] dark:bg-[#121c2c] ltr:pl-5 rtl:pr-5 py-3 ltr:pr-[50px] rtl:pl-[50px]">Chi tiết tư vấn</div>
-                                    <div className="p-5">
-                                        <form className="grid grid-cols-1 md:grid-cols-2 gap-4" onSubmit={handleUpdateSubmit(updateConsultation)}>
+            <Drawer
+                open={detailModalOpen}
+                title="Chi tiết đơn tư vấn"
+                dirty={isUpdateDirty}
+                saving={updating}
+                saveLabel="Lưu thay đổi"
+                onClose={closeDetailModal}
+                onSave={handleUpdateSubmit(updateConsultation)}
+            >
+
                                             <div>
                                                 <label className="block mb-1 font-medium" htmlFor="fullName-update">
                                                     Họ và tên <span className="text-red-500">*</span>
@@ -732,7 +686,7 @@ const ConsultationsPage = () => {
                                                     ))}
                                                 </select>
                                             </div>
-                                            <div className="md:col-span-2">
+                                            <div>
                                                 <label className="block mb-1 font-medium" htmlFor="note-update">
                                                     Ghi chú
                                                 </label>
@@ -751,14 +705,7 @@ const ConsultationsPage = () => {
                                                     </button>
                                                 </div>
                                             </div>
-                                        </form>
-                                    </div>
-                                </DialogPanel>
-                            </Transition.Child>
-                        </div>
-                    </div>
-                </Dialog>
-            </Transition>
+            </Drawer>
         </section>
     );
 };

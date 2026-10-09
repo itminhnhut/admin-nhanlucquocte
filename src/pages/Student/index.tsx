@@ -11,11 +11,11 @@ import { useDispatch } from 'react-redux';
 import IconPencil from '../../components/Icon/IconPencil';
 import IconTrashLines from '../../components/Icon/IconTrashLines';
 import IconPlus from '../../components/Icon/IconPlus';
-import { Dialog, DialogPanel, Transition } from '@headlessui/react';
 import IconX from '../../components/Icon/IconX';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import IconSearch from '../../components/Icon/IconSearch';
 import TextWithCopy from '../../components/TextWithCopy';
+import Drawer from '../../components/Drawer';
 import http from '../../utils/http';
 import { notBlank, trimStrings } from '../../utils/trimStrings';
 import Swal from 'sweetalert2';
@@ -103,7 +103,7 @@ const StudentsTables = () => {
         handleSubmit,
         reset,
         getValues,
-        formState: { errors, isSubmitting },
+        formState: { errors, isSubmitting, isDirty },
     } = useForm<StudentFormValues>({
         defaultValues: {
             studentCode: '',
@@ -235,8 +235,7 @@ const StudentsTables = () => {
         }
     };
 
-    const handleGraduationSubmit = async (e: FormEvent) => {
-        e.preventDefault();
+    const handleGraduationSubmit = async () => {
         if (!selectedStudentForGraduation) return;
 
         const payload = trimStrings({
@@ -300,7 +299,7 @@ const StudentsTables = () => {
                             <div className="flex gap-3">
                                 <button
                                     type="button"
-                                    className="btn btn-primary"
+                                    data-testid="them-hoc-vien" className="btn btn-primary"
                                     onClick={() => {
                                         setEditingStudent(null);
                                         reset({
@@ -535,39 +534,16 @@ const StudentsTables = () => {
             </div>
 
             {/* Modal thêm / sửa sinh viên */}
-            <Transition appear show={addModalOpen} as={Fragment}>
-                <Dialog as="div" open={addModalOpen} onClose={() => setAddModalOpen(false)} className="relative z-[51]">
-                    <Transition.Child as={Fragment} enter="ease-out duration-300" enterFrom="opacity-0" enterTo="opacity-100" leave="ease-in duration-200" leaveFrom="opacity-100" leaveTo="opacity-0">
-                        <div className="fixed inset-0 bg-[black]/60" />
-                    </Transition.Child>
-                    <div className="fixed inset-0 overflow-y-auto">
-                        <div className="flex min-h-full items-center justify-center px-4 py-8">
-                            <Transition.Child
-                                as={Fragment}
-                                enter="ease-out duration-300"
-                                enterFrom="opacity-0 scale-95"
-                                enterTo="opacity-100 scale-100"
-                                leave="ease-in duration-200"
-                                leaveFrom="opacity-100 scale-100"
-                                leaveTo="opacity-0 scale-95"
-                            >
-                                <DialogPanel className="panel border-0 p-0 rounded-lg overflow-hidden w-full max-w-lg text-black dark:text-white-dark">
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setAddModalOpen(false);
-                                            setEditingStudent(null);
-                                            reset();
-                                        }}
-                                        className="absolute top-4 ltr:right-4 rtl:left-4 text-gray-400 hover:text-gray-800 dark:hover:text-gray-600 outline-none"
-                                    >
-                                        <IconX />
-                                    </button>
-                                    <div className="text-lg font-medium bg-[#fbfbfb] dark:bg-[#121c2c] ltr:pl-5 rtl:pr-5 py-3 ltr:pr-[50px] rtl:pl-[50px]">
-                                        {editingStudent ? 'Chỉnh sửa sinh viên' : 'Thêm sinh viên'}
-                                    </div>
-                                    <div className="p-5">
-                                        <form onSubmit={handleSubmit(onSubmit)}>
+            <Drawer
+                open={addModalOpen}
+                title="Thông tin học viên"
+                dirty={isDirty}
+                saving={isSubmitting}
+                saveLabel="Lưu học viên"
+                onClose={() => setAddModalOpen(false)}
+                onSave={handleSubmit(onSubmit)}
+            >
+
                                             <div className="mb-5">
                                                 <label htmlFor="studentCode">
                                                     Mã sinh viên <span className="text-red-500">*</span>
@@ -657,64 +633,18 @@ const StudentsTables = () => {
                                                 {errors.phone && <p className="mt-1 text-sm text-red-500">{errors.phone.message}</p>}
                                             </div> */}
 
-                                            <div className="flex justify-end items-center mt-8">
-                                                <button
-                                                    type="button"
-                                                    className="btn btn-outline-danger"
-                                                    onClick={() => {
-                                                        reset();
-                                                        setEditingStudent(null);
-                                                        setAddModalOpen(false);
-                                                    }}
-                                                >
-                                                    Cancel
-                                                </button>
-                                                <button type="submit" className="btn btn-primary ltr:ml-4 rtl:mr-4" disabled={isSubmitting}>
-                                                    {isSubmitting ? (editingStudent ? 'Đang cập nhật...' : 'Đang lưu...') : editingStudent ? 'Cập nhật' : 'Lưu'}
-                                                </button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </DialogPanel>
-                            </Transition.Child>
-                        </div>
-                    </div>
-                </Dialog>
-            </Transition>
+            </Drawer>
 
             {/* Modal Tốt nghiệp */}
-            <Transition appear show={graduationModalOpen} as={Fragment}>
-                <Dialog as="div" open={graduationModalOpen} onClose={() => setGraduationModalOpen(false)} className="relative z-[51]">
-                    <Transition.Child as={Fragment} enter="ease-out duration-300" enterFrom="opacity-0" enterTo="opacity-100" leave="ease-in duration-200" leaveFrom="opacity-100" leaveTo="opacity-0">
-                        <div className="fixed inset-0 bg-[black]/60" />
-                    </Transition.Child>
-                    <div className="fixed inset-0 overflow-y-auto">
-                        <div className="flex min-h-full items-center justify-center px-4 py-8">
-                            <Transition.Child
-                                as={Fragment}
-                                enter="ease-out duration-300"
-                                enterFrom="opacity-0 scale-95"
-                                enterTo="opacity-100 scale-100"
-                                leave="ease-in duration-200"
-                                leaveFrom="opacity-100 scale-100"
-                                leaveTo="opacity-0 scale-95"
-                            >
-                                <DialogPanel className="panel border-0 p-0 rounded-lg overflow-hidden w-full max-w-lg text-black dark:text-white-dark">
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setGraduationModalOpen(false);
-                                            setSelectedStudentForGraduation(null);
-                                        }}
-                                        className="absolute top-4 ltr:right-4 rtl:left-4 text-gray-400 hover:text-gray-800 dark:hover:text-gray-600 outline-none"
-                                    >
-                                        <IconX />
-                                    </button>
+            <Drawer
+                open={graduationModalOpen}
+                title="Thông tin tốt nghiệp"
+                saving={false}
+                saveLabel="Lưu tốt nghiệp"
+                onClose={() => setGraduationModalOpen(false)}
+                onSave={handleGraduationSubmit}
+            >
 
-                                    <div className="text-lg font-medium bg-[#fbfbfb] dark:bg-[#121c2c] ltr:pl-5 rtl:pr-5 py-3 ltr:pr-[50px] rtl:pl-[50px]">Thông tin tốt nghiệp</div>
-
-                                    <div className="p-5">
-                                        <form onSubmit={handleGraduationSubmit}>
                                             <div className="mb-4 text-sm bg-slate-50 dark:bg-slate-900/40 rounded p-3">
                                                 <div>
                                                     <span className="font-semibold">Họ tên:</span> {selectedStudentForGraduation?.fullName || '-'}
@@ -821,31 +751,7 @@ const StudentsTables = () => {
                                                 />
                                             </div>
 
-                                            <div className="flex justify-end items-center mt-8">
-                                                <button
-                                                    type="button"
-                                                    className="btn btn-outline-danger"
-                                                    onClick={() => {
-                                                        setGraduationModalOpen(false);
-                                                        setSelectedStudentForGraduation(null);
-                                                    }}
-                                                >
-                                                    {graduationMode === 'view' ? 'Đóng' : 'Hủy'}
-                                                </button>
-                                                {graduationMode === 'create' && (
-                                                    <button type="submit" className="btn btn-primary ltr:ml-4 rtl:mr-4" disabled={graduationSubmitting}>
-                                                        {graduationSubmitting ? 'Đang lưu...' : 'Lưu thông tin'}
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </form>
-                                    </div>
-                                </DialogPanel>
-                            </Transition.Child>
-                        </div>
-                    </div>
-                </Dialog>
-            </Transition>
+            </Drawer>
         </section>
     );
 };
