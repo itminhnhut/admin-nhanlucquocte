@@ -1,0 +1,156 @@
+body {
+    margin: 0;
+    background: #f4f4f4;
+    font-family:
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        'Segoe UI',
+        sans-serif;
+}
+
+.ql-toc-block {
+    margin: 20px 0;
+}
+
+/* Remove extra blank space Quill inserts around embedded TOC */
+.ql-toc-block + .ql-editor p:first-child {
+    margin-top: 0 !important;
+}
+.ql-toc-block .ql-editor p {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+.ql-toc-block p {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.ql-toc-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 8px 12px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.04);
+    display: block;
+}
+.ql-toc-card p {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Header */
+.ql-toc-header-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+}
+
+.ql-toc-icon {
+    font-size: 14px;
+    opacity: 0.7;
+}
+
+.ql-toc-title {
+    font-weight: 600;
+    font-size: 15px;
+    color: #111827;
+}
+
+/* List */
+.ql-toc-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    padding-left: 0 !important;
+    margin-left: 0 !important;
+}
+.ql-toc-item {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    padding: 4px 0;
+    line-height: 1.4;
+    font-size: 14px;
+    margin-left: 0 !important;
+}
+
+.ql-toc-h3 {
+    padding-left: 20px;
+    font-size: 13px;
+    opacity: 0.9;
+}
+
+/* Index */
+.ql-toc-index {
+    min-width: 36px;
+    font-weight: 500;
+    color: #6b7280;
+}
+
+/* Link */
+.ql-toc-link {
+    text-decoration: none;
+    color: #374151;
+    transition: 0.15s;
+}
+
+.ql-toc-link:hover {
+    color: #2563eb;
+    text-decoration: underline;
+}
+
+/* Empty state */
+.ql-toc-empty {
+    font-size: 13px;
+    color: #6b7280;
+}
+
+/* Sticky Quill toolbar */
+.ql-toolbar.ql-snow {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    background: #fff;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+/* Quill editor wrapper height fix */
+.quill-editor .ql-container {
+    min-height: 280px; /* chiều cao tối thiểu cho khung editor */
+}
+
+.quill-editor .ql-editor {
+    min-height: 240px; /* vùng gõ chữ bên trong */
+    padding-bottom: 24px; /* dư chỗ ở cuối cho dễ gõ */
+}
+
+/* Image alignment support for Quill */
+.ql-editor img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 0; /* để mặc định, canh theo .ql-align-* */
+}
+
+/* Center image khi dùng canh giữa */
+.ql-editor .ql-align-center img,
+.ql-editor p.ql-align-center img {
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+/* Canh phải */
+.ql-editor .ql-align-right img,
+.ql-editor p.ql-align-right img {
+    margin-left: auto !important;
+    margin-right: 0 !important;
+}
+
+/* Canh trái (mặc định) */
+.ql-editor .ql-align-left img,
+.ql-editor p.ql-align-left img {
+    margin-left: 0 !important;
+    margin-right: auto !important;
+}

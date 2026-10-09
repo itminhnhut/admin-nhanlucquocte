@@ -1,0 +1,3 @@
+# Trang quản trị — không cho công cụ tìm kiếm thu thập
+User-agent: *
+Disallow: /

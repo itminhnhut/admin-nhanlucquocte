@@ -1,0 +1,853 @@
+.news-lexical-editor {
+    overflow: visible;
+    border: 1px solid #dbe1ea;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 1px 2px rgb(15 23 42 / 4%);
+}
+
+.lexical-toolbar {
+    position: sticky;
+    top: 54px;
+    z-index: 35;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    min-height: 60px;
+    overflow: visible;
+    padding: 9px 14px;
+    border-bottom: 1px solid #e6eaf0;
+    border-radius: 12px 12px 0 0;
+    background: #fff;
+    scrollbar-width: thin;
+}
+
+@media (min-width: 1536px) {
+    .lexical-toolbar {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        overflow-y: hidden;
+    }
+}
+
+@media (max-width: 767px) {
+    .lexical-toolbar {
+        top: 50px;
+        gap: 6px;
+        padding: 8px;
+    }
+
+    .lexical-toolbar-group {
+        max-width: 100%;
+    }
+
+    .lexical-block-group {
+        width: 100%;
+    }
+
+    .lexical-block-group select {
+        min-width: 0 !important;
+        flex: 1;
+    }
+
+    .lexical-content-editable {
+        min-height: 300px;
+        padding: 20px 18px;
+    }
+
+    .lexical-placeholder {
+        top: 20px;
+        left: 18px;
+    }
+
+    .lexical-toc-panel {
+        margin: 0 10px 12px;
+    }
+
+    .lexical-editor-footer {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 2px;
+    }
+}
+
+.lexical-toolbar-group {
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
+    gap: 2px;
+    padding-right: 4px;
+    border-right: 0;
+}
+
+.lexical-toolbar-group:last-child {
+    padding-right: 0;
+    border-right: 0;
+}
+
+.lexical-toolbar button,
+.lexical-toolbar select,
+.lexical-toolbar input[type='color'] {
+    min-height: 38px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: #fff;
+    padding: 6px 10px;
+    color: #334155;
+    font-size: 14px;
+    transition: 120ms ease;
+}
+
+.lexical-toolbar button:hover {
+    border-color: #c7d2fe;
+    background: #eef2ff;
+    color: #4361ee;
+}
+
+.lexical-toolbar button.is-active {
+    border-color: #a5b4fc;
+    background: #e0e7ff;
+    color: #3730a3;
+}
+
+.lexical-toolbar button:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+.lexical-toolbar select {
+    border-color: transparent;
+    background-color: transparent;
+}
+
+.lexical-toolbar-selects select:first-child {
+    min-width: 132px;
+}
+
+.lexical-toolbar-selects select:last-child {
+    min-width: 105px;
+}
+
+.lexical-font-size {
+    gap: 0;
+}
+
+.lexical-font-size button {
+    padding-right: 7px;
+    padding-left: 7px;
+    font-size: 21px;
+}
+
+.lexical-font-size input {
+    width: 48px;
+    height: 34px;
+    appearance: textfield;
+    border: 2px solid #64748b;
+    border-radius: 6px;
+    background: #fff;
+    text-align: center;
+    font-weight: 600;
+}
+
+.lexical-font-size input::-webkit-inner-spin-button,
+.lexical-font-size input::-webkit-outer-spin-button {
+    appearance: none;
+}
+
+.lexical-insert-select {
+    min-width: 112px;
+}
+
+.lexical-align-group select {
+    min-width: 140px;
+}
+
+.lexical-color-group label {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 38px;
+    cursor: pointer;
+    padding: 6px 10px 9px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: #fff;
+    color: #334155;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.lexical-color-group label:hover {
+    border-color: #c7d2fe;
+    background: #eef2ff;
+}
+
+.lexical-color-group input[type='color'] {
+    position: absolute;
+    right: 10px;
+    bottom: 4px;
+    left: 10px;
+    width: auto;
+    min-height: 4px;
+    height: 4px;
+    overflow: hidden;
+    border: 0;
+    border-radius: 2px;
+    padding: 0;
+}
+
+.lexical-insert-button {
+    white-space: nowrap;
+}
+
+.lexical-spinner {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 2px solid currentcolor;
+    border-right-color: transparent;
+    border-radius: 999px;
+    vertical-align: -2px;
+    animation: lexical-spin 600ms linear infinite;
+}
+
+@keyframes lexical-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.lexical-editor-shell {
+    position: relative;
+}
+
+.lexical-content-editable {
+    min-height: 360px;
+    max-height: 640px;
+    overflow: auto;
+    padding: 28px 32px;
+    outline: none;
+    color: #1e293b;
+    font-size: 16px;
+    line-height: 1.75;
+}
+
+.lexical-placeholder {
+    pointer-events: none;
+    position: absolute;
+    top: 28px;
+    left: 32px;
+    color: #9ca3af;
+}
+
+.lexical-editor-footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 8px 14px;
+    border-top: 1px solid #edf0f4;
+    background: #fafbfc;
+    color: #7c8799;
+    font-size: 12px;
+}
+
+.lexical-paragraph {
+    margin: 0;
+}
+
+.lexical-h2 {
+    margin: 20px 0 10px;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.lexical-h1 {
+    margin: 24px 0 12px;
+    font-size: 1.875rem;
+    font-weight: 750;
+}
+
+.lexical-h3 {
+    margin: 16px 0 8px;
+    font-size: 1.25rem;
+    font-weight: 650;
+}
+
+.lexical-quote {
+    margin: 14px 0;
+    border-left: 4px solid #4361ee;
+    padding-left: 14px;
+    color: #6b7280;
+}
+
+.lexical-ol {
+    list-style: decimal;
+    padding-left: 24px;
+}
+
+.lexical-ul {
+    list-style: disc;
+    padding-left: 24px;
+}
+
+.lexical-link {
+    color: #2563eb;
+    text-decoration: underline;
+}
+
+.lexical-image-wrapper {
+    display: flex;
+    margin: 0;
+}
+
+.lexical-paragraph:has(> .lexical-image-wrapper) {
+    line-height: normal;
+}
+
+.lexical-align-left {
+    justify-content: flex-start;
+}
+
+.lexical-align-center {
+    justify-content: center;
+}
+
+.lexical-align-right {
+    justify-content: flex-end;
+}
+
+.lexical-image-selection {
+    display: flex;
+    width: 100%;
+    max-width: 100%;
+}
+
+.lexical-image-selection.lexical-align-left {
+    justify-content: flex-start;
+}
+
+.lexical-image-selection.lexical-align-center {
+    justify-content: center;
+}
+
+.lexical-image-selection.lexical-align-right {
+    justify-content: flex-end;
+}
+
+.lexical-image-stage {
+    position: relative;
+    display: inline-flex;
+    align-items: stretch;
+    flex-direction: column;
+    width: fit-content;
+    max-width: min(100%, 720px);
+}
+
+.lexical-image {
+    display: block;
+    width: fit-content;
+    max-width: 100%;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    object-fit: contain;
+}
+
+.lexical-image-selection.is-selected .lexical-image {
+    border-color: #4361ee;
+    box-shadow: 0 0 0 3px rgb(67 97 238 / 14%);
+}
+
+.lexical-image-caption {
+    display: block;
+    max-width: 100%;
+    padding: 8px 4px 0;
+    color: #64748b;
+    font-size: 14px;
+    font-style: italic;
+    line-height: 1.5;
+    text-align: left;
+}
+
+.lexical-image-resizer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.resize-handle {
+    position: absolute;
+    z-index: 3;
+    width: 12px;
+    height: 12px;
+    pointer-events: auto;
+    border: 2px solid #fff;
+    border-radius: 3px;
+    background: #4f46e5;
+    box-shadow: 0 1px 4px rgb(15 23 42 / 30%);
+    padding: 0;
+}
+
+.resize-nw {
+    top: -6px;
+    left: -6px;
+    cursor: nwse-resize;
+}
+
+.resize-n {
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    cursor: ns-resize;
+}
+
+.resize-ne {
+    top: -6px;
+    right: -6px;
+    cursor: nesw-resize;
+}
+
+.resize-e {
+    top: 50%;
+    right: -6px;
+    transform: translateY(-50%);
+    cursor: ew-resize;
+}
+
+.resize-sw {
+    bottom: -6px;
+    left: -6px;
+    cursor: nesw-resize;
+}
+
+.resize-s {
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    cursor: ns-resize;
+}
+
+.resize-se {
+    right: -6px;
+    bottom: -6px;
+    cursor: nwse-resize;
+}
+
+.resize-w {
+    top: 50%;
+    left: -6px;
+    transform: translateY(-50%);
+    cursor: ew-resize;
+}
+
+.lexical-image-context-menu {
+    position: absolute;
+    z-index: 20;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: max-content;
+    padding: 6px;
+    transform: translateX(-50%);
+    border: 1px solid #dbe1ea;
+    border-radius: 9px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgb(15 23 42 / 16%);
+}
+
+.lexical-image-context-menu::after {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    width: 8px;
+    height: 8px;
+    transform: translate(-50%, -50%) rotate(45deg);
+    border-right: 1px solid #dbe1ea;
+    border-bottom: 1px solid #dbe1ea;
+    background: #fff;
+    content: '';
+}
+
+.lexical-image-context-menu > span:first-child {
+    padding: 0 5px;
+    color: #64748b;
+    font-size: 12px;
+}
+
+.lexical-image-context-menu button {
+    min-width: 30px;
+    height: 30px;
+    border: 0;
+    border-radius: 5px;
+    background: #f1f5f9;
+    color: #334155;
+    font-size: 12px;
+}
+
+.lexical-image-context-menu button:hover {
+    background: #e0e7ff;
+    color: #3730a3;
+}
+
+.lexical-image-context-menu button.is-active {
+    background: #4f46e5;
+    color: #fff;
+}
+
+.lexical-image-context-menu button.is-danger:hover {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.lexical-image-menu-divider {
+    width: 1px;
+    height: 20px;
+    margin: 0 2px;
+    background: #dbe1ea;
+}
+
+.lexical-video {
+    width: min(100%, 720px);
+    min-height: 360px;
+    border: 0;
+}
+
+.lexical-toc-panel {
+    margin: 0 18px 18px;
+    padding: 14px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #f8fafc;
+}
+
+.lexical-toc-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.lexical-toc-panel-header > div {
+    display: grid;
+    gap: 2px;
+}
+
+.lexical-toc-panel-header strong {
+    color: #1e293b;
+    font-size: 14px;
+}
+
+.lexical-toc-panel-header span {
+    color: #64748b;
+    font-size: 12px;
+}
+
+.lexical-toc-count {
+    flex: 0 0 auto;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: #e0e7ff;
+    color: #4338ca !important;
+    font-weight: 600;
+}
+
+.lexical-toc-panel-list {
+    display: grid;
+    gap: 3px;
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.lexical-toc-panel-list li.is-subheading {
+    padding-left: 22px;
+}
+
+.lexical-toc-panel-list button {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 8px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    padding: 6px 8px;
+    color: #475569;
+    text-align: left;
+}
+
+.lexical-toc-panel-list button:hover {
+    background: #e9eef8;
+    color: #3730a3;
+}
+
+.lexical-toc-panel-list button span {
+    display: grid;
+    width: 22px;
+    height: 22px;
+    place-items: center;
+    border-radius: 5px;
+    background: #eef2ff;
+    color: #4f46e5;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.lexical-toc-panel-empty {
+    margin: 10px 0 0;
+    color: #94a3b8;
+    font-size: 13px;
+}
+
+.lexical-list-item-checked,
+.lexical-list-item-unchecked {
+    position: relative;
+    margin-left: 8px;
+    padding-left: 28px;
+    list-style: none;
+    outline: none;
+}
+
+.lexical-list-item-checked::before,
+.lexical-list-item-unchecked::before {
+    position: absolute;
+    top: 5px;
+    left: 0;
+    display: grid;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    place-items: center;
+    border: 1px solid #94a3b8;
+    border-radius: 4px;
+    background: #fff;
+    content: '';
+}
+
+.lexical-list-item-checked {
+    color: #64748b;
+    text-decoration: line-through;
+}
+
+.lexical-list-item-checked::before {
+    border-color: #4f46e5;
+    background: #4f46e5;
+    color: #fff;
+    content: '✓';
+    font-size: 12px;
+}
+
+.dark .news-lexical-editor,
+.dark .lexical-toolbar,
+.dark .lexical-toolbar button,
+.dark .lexical-toolbar select,
+.dark .lexical-toolbar input[type='color'] {
+    border-color: #17263c;
+    background: #121e32;
+    color: #d1d5db;
+}
+
+.dark .lexical-toolbar,
+.dark .lexical-editor-footer {
+    background: #0f1a2c;
+}
+
+.dark .lexical-toolbar-group,
+.dark .lexical-editor-footer {
+    border-color: #26354d;
+}
+
+.dark .lexical-toolbar button:hover,
+.dark .lexical-toolbar button.is-active {
+    background: #1c2b45;
+}
+
+.dark .lexical-content-editable {
+    color: #d1d5db;
+}
+
+.dark .lexical-toc-panel {
+    border-color: #26354d;
+    background: #0f1a2c;
+}
+
+.dark .lexical-image-context-menu {
+    border-color: #26354d;
+    background: #121e32;
+}
+
+.dark .lexical-image-context-menu::after {
+    border-color: #26354d;
+    background: #121e32;
+}
+
+.dark .lexical-image-context-menu button {
+    background: #1c2b45;
+    color: #d1d5db;
+}
+
+.dark .lexical-toc-panel-header strong,
+.dark .lexical-toc-panel-list button {
+    color: #d1d5db;
+}
+
+
+/* ── Menu thả xuống của thanh công cụ ───────────────────────────────────────
+   Mỗi nút có NHÃN CHỮ tiếng Việt bên cạnh icon, để người chưa quen vẫn đọc được
+   mình đang bấm gì (bố cục theo Lexical playground). */
+.lexical-dropdown {
+    position: relative;
+    display: inline-flex;
+}
+
+.lexical-toolbar .lexical-dropdown-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    max-width: 200px;
+    white-space: nowrap;
+}
+
+.lexical-dropdown-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.lexical-dropdown-caret {
+    flex: 0 0 auto;
+    opacity: 0.55;
+    transition: transform 120ms ease;
+}
+
+.lexical-toolbar .lexical-dropdown-trigger.is-open {
+    border-color: #a5b4fc;
+    background: #eef2ff;
+    color: #4361ee;
+}
+
+.lexical-dropdown-trigger.is-open .lexical-dropdown-caret {
+    transform: rotate(180deg);
+}
+
+.lexical-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 5px);
+    bottom: auto;
+    left: 0;
+    z-index: 60;
+    display: flex;
+    min-width: 232px;
+    max-height: min(420px, 60vh);
+    overflow-y: auto;
+    flex-direction: column;
+    gap: 1px;
+    padding: 6px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 12px 32px rgb(15 23 42 / 14%);
+}
+
+.lexical-toolbar .lexical-dropdown-menu button {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    width: 100%;
+    min-height: 0;
+    padding: 8px 10px;
+    border-radius: 7px;
+    text-align: left;
+}
+
+.lexical-dropdown-menu button > svg {
+    flex: 0 0 auto;
+    margin-top: 1px;
+}
+
+.lexical-dropdown-menu button > span {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.35;
+}
+
+.lexical-dropdown-menu button small {
+    color: #94a3b8;
+    font-size: 11.5px;
+}
+
+.lexical-dropdown-menu button.is-active {
+    border-color: transparent;
+    background: #e0e7ff;
+    color: #3730a3;
+}
+
+.lexical-dropdown-menu button.is-active small {
+    color: #6366f1;
+}
+
+@media (max-width: 767px) {
+    /* Trên điện thoại: menu bám trái mép toolbar cho khỏi tràn ra ngoài màn hình */
+    .lexical-dropdown-menu {
+        position: fixed;
+        right: 8px;
+        left: 8px;
+        min-width: 0;
+    }
+
+    .lexical-toolbar .lexical-dropdown-trigger {
+        max-width: 160px;
+    }
+}
+
+/* Menu lật lên khi dưới không còn chỗ */
+.lexical-dropdown-menu.is-up {
+    top: auto;
+    bottom: calc(100% + 5px);
+}
+
+/* ── Thanh báo có bản nháp chưa lưu ──────────────────────────────────────── */
+.lexical-draft-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-bottom: 1px solid #fde68a;
+    border-radius: 12px 12px 0 0;
+    background: #fffbeb;
+    color: #92400e;
+    font-size: 13.5px;
+}
+
+.lexical-draft-bar button {
+    min-height: 32px;
+    border: 1px solid #fcd34d;
+    border-radius: 6px;
+    background: #fff;
+    padding: 5px 12px;
+    color: #92400e;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.lexical-draft-bar button:hover {
+    background: #fef3c7;
+}
+
+.lexical-draft-bar button.is-primary {
+    border-color: #d97706;
+    background: #d97706;
+    color: #fff;
+}
+
+.lexical-draft-bar button.is-primary:hover {
+    background: #b45309;
+}
+
+/* Có thanh nháp thì toolbar không bo góc trên nữa */
+.lexical-draft-bar + .lexical-toolbar {
+    border-radius: 0;
+}
