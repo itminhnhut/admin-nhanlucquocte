@@ -12,7 +12,6 @@ const PATHS: Record<string, string> = {
     link: 'M10 13a5 5 0 0 0 7 0l2-2a5 5 0 0 0-7-7l-1 1M14 11a5 5 0 0 0-7 0l-2 2a5 5 0 0 0 7 7l1-1',
     image: 'M3 5h18v14H3zM3 16l5-5 4 4 3-3 6 6',
     video: 'M3 6h12v12H3zM15 10l6-3v10l-6-3',
-    hr: 'M4 12h16',
     paragraph: 'M8 4h9M11 4v16M8 4a4 4 0 0 0 0 8h3',
     h1: 'M4 6v12M12 6v12M4 12h8M17 18V9l-2.5 2',
     h2: 'M4 6v12M12 6v12M4 12h8M16 11a2 2 0 1 1 4 0c0 2-4 3-4 7h4',
@@ -32,6 +31,8 @@ const PATHS: Record<string, string> = {
     clearFormat: 'M7 5h12M11 5 8 19M5 19h7M15 13l5 5M20 13l-5 5',
     fontColor: 'M6 15 11 5l5 10M7.6 12h6.8M4 20h16',
     bgColor: 'M5 4h11v9H5zM3 20h18M8 8h5',
+    hr: 'M4 12h16M7 7h10M7 17h10',
+    table: 'M3 5h18v14H3zM3 10h18M3 15h18M9 5v14M15 5v14',
     caret: 'm6 9 6 6 6-6',
     close: 'M6 6l12 12M18 6 6 18',
 };

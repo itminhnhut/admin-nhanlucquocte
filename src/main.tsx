@@ -10,7 +10,6 @@ import './tailwind.css';
 // i18n (needs to be bundled)
 import './i18n';
 
-import 'react-quill/dist/quill.snow.css';
 
 // Router
 import { RouterProvider } from 'react-router-dom';
@@ -19,7 +18,6 @@ import router from './router/index';
 // Redux
 import { Provider } from 'react-redux';
 import store from './store/index';
-import './components/Quill/index.css';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     <Suspense>

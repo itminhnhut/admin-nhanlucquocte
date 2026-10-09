@@ -7,6 +7,7 @@ const LoginCover = lazy(() => import('../pages/Authentication/LoginCover'));
 const ListAdmin = lazy(() => import('../pages/Admin/ListAdmin'));
 
 const ProgramsTables = lazy(() => import('../pages/Programs'));
+const ProgramForm = lazy(() => import('../pages/Programs/CRUD/Create'));
 
 const NewsTables = lazy(() => import('../pages/News'));
 const NewsForm = lazy(() => import('../pages/News/CRUD/Create'));
@@ -53,6 +54,14 @@ const routes = [
         element: <ProgramsTables />,
     },
 
+    {
+        path: '/programs/create',
+        element: <ProgramForm />,
+    },
+    {
+        path: '/programs/:id/edit',
+        element: <ProgramForm />,
+    },
     {
         path: '/news',
         element: <NewsTables />,

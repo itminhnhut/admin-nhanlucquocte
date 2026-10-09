@@ -4,13 +4,13 @@ import Swal from 'sweetalert2';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import ImageUploading, { ImageListType } from 'react-images-uploading';
-import Select from 'react-select';
+import Select, { type StylesConfig } from 'react-select';
 import { createSlugFromTitle } from '../../../utils/slug';
 import { refreshSitemap } from '../../../utils/sitemap';
 import { SITEMAP_REFRESH_URL } from '../../../configs/env';
 import { notBlank, trimStrings } from '../../../utils/trimStrings';
 import ContentEditor from '../../../components/ContentEditor';
+import CoverImageField from '../../../components/CoverImageField';
 import { clearEditorDraft } from '../../../components/ContentEditor/plugins/DraftPlugin';
 
 // Helper function to strip base64 images from HTML content
@@ -32,7 +32,19 @@ type NewsFormValues = {
     programIds: number[];
 };
 
-const maxNumber = 69;
+type ProgramOption = { value: number; label: string };
+
+// Dùng chung cho mọi ô chọn, trước đây đoạn style này bị chép lại ở từng ô
+const selectStyles: StylesConfig<ProgramOption, boolean> = {
+    control: (base, state) => ({
+        ...base,
+        minHeight: 42,
+        borderColor: state.isFocused ? '#818cf8' : '#e2e8f0',
+        boxShadow: state.isFocused ? '0 0 0 1px #818cf8' : 'none',
+    }),
+    menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+    menu: (base) => ({ ...base, zIndex: 9999 }),
+};
 
 const preparePreview = (html: string) => {
     if (!html) return { html: '', headings: [] as { id: string; text: string; level: number }[] };
@@ -152,7 +164,6 @@ const NewsForm = () => {
     const [coverUploading, setCoverUploading] = useState(false);
     const [contentUploading, setContentUploading] = useState(false);
     const [fetching, setFetching] = useState(isEditMode);
-    const [images, setImages] = useState<any[]>([]);
     const [value2, setValue2] = useState<string>('');
     const [showPreview, setShowPreview] = useState(false);
     const [contentDirty, setContentDirty] = useState(false);
@@ -215,10 +226,7 @@ const NewsForm = () => {
                 setValue2(initialContent);
                 setEditorRevision((revision) => revision + 1);
 
-                // Set hình ảnh preview nếu có
-                if (data.image) {
-                    setImages([{ dataURL: data.image }]);
-                }
+                // Ô ảnh đại diện tự dựng xem trước từ giá trị trong form
             } catch (error: any) {
                 Swal.fire({
                     icon: 'error',
@@ -260,6 +268,8 @@ const NewsForm = () => {
     const summaryValue = watch('summary');
     const imageValue = watch('image');
     const preview = useMemo(() => preparePreview(value2), [value2]);
+    const slugPreview = useMemo(() => createSlugFromTitle((titleValue || '').trim()), [titleValue]);
+    const summaryLength = (summaryValue || '').trim().length;
     const hasUnsavedChanges = isDirty || contentDirty;
 
     useEffect(() => {
@@ -294,56 +304,6 @@ const NewsForm = () => {
         if (result.isConfirmed) navigate('/news');
     };
 
-    const onChange = (imageList: ImageListType, _addUpdateIndex: number[] | undefined) => {
-        setImages(imageList as never[]);
-
-        if (imageList.length === 0) {
-            setValue('image', '', { shouldDirty: true });
-            return;
-        }
-
-        const first = imageList[0];
-        const file = first.file as File | undefined;
-
-        if (!file) {
-            setValue('image', '', { shouldDirty: true });
-            return;
-        }
-
-        const formData = new FormData();
-        formData.append('file', file);
-
-        if (!file.type.startsWith('image/') || file.size > 10 * 1024 * 1024) {
-            Swal.fire({ icon: 'warning', title: 'Ảnh không hợp lệ', text: 'Chỉ nhận file ảnh tối đa 10 MB.' });
-            setImages([]);
-            setValue('image', '', { shouldDirty: true });
-            return;
-        }
-
-        setCoverUploading(true);
-        http.post<{ url?: string; data?: { url?: string } }>('/admin/uploads', formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-        })
-            .then((res) => {
-                const url = res.url || res.data?.url || '';
-                if (!url) throw new Error('Upload không trả về URL hợp lệ');
-                setValue('image', url, { shouldDirty: true });
-            })
-            .catch((error) => {
-                console.error('Error uploading image:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Lỗi',
-                    text: 'Upload ảnh thất bại. Vui lòng thử lại.',
-                });
-                setValue('image', '', { shouldDirty: true });
-            })
-            .finally(() => {
-                setCoverUploading(false);
-            });
-    };
 
     const onSubmit = async (values: NewsFormValues) => {
         if (coverUploading || contentUploading) {
@@ -423,169 +383,134 @@ const NewsForm = () => {
             <div className="panel mt-6 mx-auto">
                 <h2 className="text-xl mb-4">{isEditMode ? 'Chỉnh sửa tin tức' : 'Tạo tin tức'}</h2>
 
-                <form onSubmit={handleSubmit(onSubmit)} className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start">
-                    <div className="lg:col-start-1">
-                        <label className="font-semibold">
-                            Tiêu đề <span className="text-red-500">*</span>
-                        </label>
-                        <input type="text" className="form-input" {...register('title', { required: 'Tiêu đề là bắt buộc', validate: notBlank('Tiêu đề là bắt buộc') })} />
-                        {errors.title && <p className="mt-1 text-red-500 text-sm">{errors.title.message}</p>}
+                <form onSubmit={handleSubmit(onSubmit)} className="grid gap-6 pb-8 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
+                    {/* Cột trái: chỉ việc viết bài, không có tuỳ chọn nào xen vào */}
+                    <div className="grid min-w-0 gap-5">
+                        <div>
+                            <label className="mb-1.5 block font-semibold text-slate-800">
+                                Tiêu đề <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                className="form-input !h-auto !py-3 !text-lg"
+                                placeholder="Ví dụ: Lễ khai giảng khoá 32 năm 2026"
+                                {...register('title', { required: 'Tiêu đề là bắt buộc', validate: notBlank('Tiêu đề là bắt buộc') })}
+                            />
+                            {errors.title && <p className="mt-1 text-sm text-red-500">{errors.title.message}</p>}
+                            <p className="mt-1.5 break-all text-xs text-slate-500">
+                                Đường dẫn bài viết: <span className="font-medium text-slate-600">/tin-tuc/{slugPreview || '...'}</span>
+                            </p>
+                        </div>
+
+                        <div>
+                            <label className="mb-1.5 block font-semibold text-slate-800">Tóm tắt</label>
+                            <textarea
+                                className="form-input"
+                                rows={3}
+                                placeholder="Vài dòng giới thiệu ngắn về bài viết"
+                                {...register('summary')}
+                            />
+                            <div className="mt-1.5 flex flex-wrap justify-between gap-2 text-xs text-slate-500">
+                                <span>Hiện ở trang danh sách và khi chia sẻ lên Facebook, Zalo.</span>
+                                <span className={summaryLength > 200 ? 'font-medium text-amber-600' : ''}>{summaryLength}/200 ký tự</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="mb-2 block font-semibold text-slate-800">Nội dung</label>
+                            <ContentEditor
+                                key={`news-editor-${id || 'new'}-${editorRevision}`}
+                                initialHtml={value2}
+                                draftKey={`news-${id || 'new'}`}
+                                onChange={handleEditorChange}
+                                onUploadingChange={setContentUploading}
+                            />
+                        </div>
                     </div>
 
-                    <div className="lg:col-start-1">
-                        <label className="font-semibold">Tóm tắt</label>
-                        <textarea className="form-input" rows={3} {...register('summary')} />
-                    </div>
+                    {/* Cột phải: ảnh, phân loại, hiển thị */}
+                    <aside className="grid content-start gap-4">
+                        <CoverImageField
+                            value={imageValue || ''}
+                            onChange={(url) => setValue('image', url, { shouldDirty: true })}
+                            onUploadingChange={setCoverUploading}
+                        />
 
-                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 lg:col-start-1">
-                        <div className="mb-4">
+                        <section className="rounded-xl border border-slate-200 bg-white p-4">
                             <h3 className="font-semibold text-slate-800">Phân loại</h3>
                             <p className="mt-1 text-xs text-slate-500">Giúp người đọc tìm thấy bài viết đúng chủ đề.</p>
-                        </div>
 
-                        <div className="grid gap-4 xl:grid-cols-2">
-                            <div>
-                                <label className="mb-1.5 block text-sm font-medium text-slate-700">Danh mục chính</label>
-                                <Select
-                                    classNamePrefix="react-select"
-                                    options={programOptions}
-                                    placeholder="Chọn một danh mục"
-                                    isClearable
-                                    isSearchable
-                                    noOptionsMessage={() => 'Không tìm thấy danh mục'}
-                                    menuPortalTarget={document.body}
-                                    styles={{
-                                        control: (base, state) => ({
-                                            ...base,
-                                            minHeight: 42,
-                                            borderColor: state.isFocused ? '#818cf8' : '#e2e8f0',
-                                            boxShadow: state.isFocused ? '0 0 0 1px #818cf8' : 'none',
-                                        }),
-                                        menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                                        menu: (base) => ({ ...base, zIndex: 9999 }),
-                                    }}
-                                    value={programOptions.find((opt) => opt.label === categoryValue) || null}
-                                    onChange={(option) => {
-                                        const opt = option as { value: number; label: string } | null;
-                                        setValue('category', opt ? opt.label : '', { shouldDirty: true });
-                                    }}
-                                />
-                                <p className="mt-1.5 text-xs text-slate-500">Chủ đề chính của bài viết.</p>
-                            </div>
+                            <label className="mb-1.5 mt-3 block text-sm font-medium text-slate-700">Danh mục chính</label>
+                            <Select
+                                classNamePrefix="react-select"
+                                options={programOptions}
+                                placeholder="Chọn một danh mục"
+                                isClearable
+                                isSearchable
+                                noOptionsMessage={() => 'Không tìm thấy danh mục'}
+                                menuPortalTarget={document.body}
+                                styles={selectStyles}
+                                value={programOptions.find((opt) => opt.label === categoryValue) || null}
+                                onChange={(option) => {
+                                    const opt = option as ProgramOption | null;
+                                    setValue('category', opt ? opt.label : '', { shouldDirty: true });
+                                }}
+                            />
 
-                            <div>
-                                <label className="mb-1.5 block text-sm font-medium text-slate-700">
-                                    Chương trình liên quan <span className="font-normal text-slate-400">(không bắt buộc)</span>
-                                </label>
-                                <Select
-                                    classNamePrefix="react-select"
-                                    options={programOptions}
-                                    isMulti
-                                    isSearchable
-                                    closeMenuOnSelect={false}
-                                    hideSelectedOptions
-                                    placeholder="Tìm và chọn chương trình"
-                                    noOptionsMessage={() => 'Không còn chương trình phù hợp'}
-                                    menuPortalTarget={document.body}
-                                    styles={{
-                                        control: (base, state) => ({
-                                            ...base,
-                                            minHeight: 42,
-                                            borderColor: state.isFocused ? '#818cf8' : '#e2e8f0',
-                                            boxShadow: state.isFocused ? '0 0 0 1px #818cf8' : 'none',
-                                        }),
-                                        menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                                        menu: (base) => ({ ...base, zIndex: 9999 }),
-                                    }}
-                                    value={programOptions.filter((opt) => (programIdsValue || []).includes(opt.value))}
-                                    onChange={(options) => {
-                                        const selected = (options as { value: number; label: string }[] | null) || [];
-                                        setValue(
-                                            'programIds',
-                                            selected.map((opt) => opt.value),
-                                            { shouldDirty: true },
-                                        );
-                                    }}
-                                />
-                                <p className="mt-1.5 text-xs text-slate-500">Có thể chọn nhiều chương trình.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="lg:col-start-1">
-                        <label className="mb-2 block font-semibold">Nội dung</label>
-                        <ContentEditor
-                            key={`news-editor-${id || 'new'}-${editorRevision}`}
-                            initialHtml={value2}
-                            draftKey={`news-${id || 'new'}`}
-                            onChange={handleEditorChange}
-                            onUploadingChange={setContentUploading}
-                        />
-                    </div>
-
-                    <aside className="grid gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4 lg:col-start-2 lg:row-start-1 lg:row-span-5 lg:sticky lg:top-20">
-                        <div className="custom-file-container !mb-0" data-upload-id="myFirstImage">
-                            <div className="label-container">
-                                <label className="font-semibold">Ảnh đại diện</label>
-                                <button
-                                    type="button"
-                                    className="custom-file-container__image-clear"
-                                    title="Xoá ảnh đại diện"
-                                    onClick={() => {
-                                        setImages([]);
-                                        setValue('image', '', { shouldDirty: true });
-                                    }}
-                                >
-                                    ×
-                                </button>
-                            </div>
-                            <label className="custom-file-container__custom-file"></label>
-                            <input type="hidden" name="MAX_FILE_SIZE" value="10485760" />
-                            <ImageUploading value={images} onChange={onChange} maxNumber={maxNumber}>
-                                {({ imageList, onImageUpload }) => (
-                                    <div className="upload__image-wrapper">
-                                        <button type="button" disabled={coverUploading} className="custom-file-container__custom-file__custom-file-control" onClick={onImageUpload}>
-                                            {coverUploading ? 'Đang tải ảnh…' : imageList[0] ? 'Thay ảnh' : 'Chọn ảnh'}
-                                        </button>
-                                        &nbsp;
-                                        {imageList[0] && (
-                                            <button
-                                                type="button"
-                                                title="Nhấn để thay ảnh"
-                                                className="custom-file-container__image-preview relative mt-3 !h-auto w-full overflow-hidden rounded-lg"
-                                                onClick={onImageUpload}
-                                            >
-                                                <img src={imageList[0].dataURL} alt="Ảnh đại diện" className="m-auto max-h-44 w-full object-contain" />
-                                            </button>
-                                        )}
-                                    </div>
-                                )}
-                            </ImageUploading>
-                            {images.length === 0 ? <img src="/assets/images/file-preview.svg" className="mx-auto mt-3 h-28 w-full object-contain opacity-70" alt="" /> : ''}
-                        </div>
-
-                        <div className="grid gap-3 border-t border-slate-200 pt-4">
-                            <label className="flex cursor-pointer items-center justify-between gap-3 rounded-lg bg-white px-3 py-2.5">
-                                <span className="font-medium text-slate-700">Nổi bật</span>
-                                <input type="checkbox" className="form-checkbox" {...register('isHot')} />
+                            <label className="mb-1.5 mt-4 block text-sm font-medium text-slate-700">
+                                Chương trình liên quan <span className="font-normal text-slate-400">(không bắt buộc)</span>
                             </label>
+                            <Select
+                                classNamePrefix="react-select"
+                                options={programOptions}
+                                isMulti
+                                isSearchable
+                                closeMenuOnSelect={false}
+                                hideSelectedOptions
+                                placeholder="Tìm và chọn chương trình"
+                                noOptionsMessage={() => 'Không còn chương trình phù hợp'}
+                                menuPortalTarget={document.body}
+                                styles={selectStyles}
+                                value={programOptions.filter((opt) => (programIdsValue || []).includes(opt.value))}
+                                onChange={(options) => {
+                                    const selected = (options as ProgramOption[] | null) || [];
+                                    setValue(
+                                        'programIds',
+                                        selected.map((opt) => opt.value),
+                                        { shouldDirty: true },
+                                    );
+                                }}
+                            />
+                        </section>
 
-                            <label className="flex cursor-pointer items-center justify-between gap-3 rounded-lg bg-white px-3 py-2.5">
-                                <span className="font-medium text-slate-700">Xuất bản</span>
-                                <input type="checkbox" className="form-checkbox" {...register('published')} />
+                        <section className="rounded-xl border border-slate-200 bg-white p-4">
+                            <h3 className="font-semibold text-slate-800">Hiển thị</h3>
+                            <label className="mt-3 flex cursor-pointer items-start justify-between gap-3 rounded-lg bg-slate-50 px-3 py-2.5">
+                                <span>
+                                    <span className="block font-medium text-slate-700">Xuất bản</span>
+                                    <small className="text-xs text-slate-500">Bỏ chọn để lưu nháp, chưa cho người ngoài xem</small>
+                                </span>
+                                <input type="checkbox" className="form-checkbox mt-0.5" {...register('published')} />
                             </label>
-                        </div>
+                            <label className="mt-2 flex cursor-pointer items-start justify-between gap-3 rounded-lg bg-slate-50 px-3 py-2.5">
+                                <span>
+                                    <span className="block font-medium text-slate-700">Nổi bật</span>
+                                    <small className="text-xs text-slate-500">Đưa bài lên đầu trang tin tức</small>
+                                </span>
+                                <input type="checkbox" className="form-checkbox mt-0.5" {...register('isHot')} />
+                            </label>
+                        </section>
                     </aside>
 
-                    <div className="sticky bottom-0 z-30 -mx-5 mt-4 flex flex-col gap-3 border-t border-slate-200 bg-white/95 px-5 py-3 shadow-[0_-8px_24px_rgba(15,23,42,0.08)] backdrop-blur sm:flex-row sm:items-center sm:justify-between lg:col-span-2">
+                    <div className="sticky bottom-0 z-30 -mx-5 mt-2 flex flex-col gap-3 border-t border-slate-200 bg-white/95 px-5 py-3 shadow-[0_-8px_24px_rgba(15,23,42,0.08)] backdrop-blur sm:flex-row sm:items-center sm:justify-between lg:col-span-2">
                         <span className={`text-xs font-medium ${hasUnsavedChanges ? 'text-amber-600' : 'text-emerald-600'}`}>
                             {hasUnsavedChanges ? '● Có thay đổi chưa lưu' : '✓ Không có thay đổi mới'}
                         </span>
                         <div className="flex justify-end gap-3">
-                            <button type="button" className="btn btn-outline-danger" onClick={handleCancel}>
+                            <button type="button" className="btn btn-outline-secondary" onClick={handleCancel}>
                                 Hủy
                             </button>
-                            <button type="button" className="btn btn-outline-secondary" onClick={() => setShowPreview(true)}>
+                            <button type="button" className="btn btn-outline-primary" onClick={() => setShowPreview(true)}>
                                 Xem trước
                             </button>
                             <button type="submit" className="btn btn-primary" disabled={loading || coverUploading || contentUploading}>

@@ -7,12 +7,15 @@ import { IRootState } from '../../store';
 import { useState, useEffect } from 'react';
 import IconCaretsDown from '../Icon/IconCaretsDown';
 
-import IconMinus from '../Icon/IconMinus';
 
 import IconMenuTables from '../Icon/Menu/IconMenuTables';
-
 import IconNotes from '../Icon/IconNotes';
 import IconNotesEdit from '../Icon/IconNotesEdit';
+import IconInbox from '../Icon/IconInbox';
+import IconUser from '../Icon/IconUser';
+import IconTag from '../Icon/IconTag';
+import IconSettings from '../Icon/IconSettings';
+
 
 const Sidebar = () => {
     const themeConfig = useSelector((state: IRootState) => state.themeConfig);
@@ -52,9 +55,12 @@ const Sidebar = () => {
             >
                 <div className="bg-white dark:bg-black h-full">
                     <div className="flex justify-between items-center px-4 py-3">
-                        <NavLink to="/students" className="main-logo flex items-center shrink-0">
-                            <img className="w-8 ml-[5px] flex-none" src="/assets/images/logo.svg" alt="logo" />
-                            <span className="text-2xl ltr:ml-1.5 rtl:mr-1.5 font-semibold align-middle lg:inline dark:text-white-light">ADMIN</span>
+                        <NavLink to="/news" className="main-logo flex items-center gap-2 shrink-0">
+                            <img className="w-9 flex-none" src="/assets/images/logo-truong.png" alt="Logo Trường Trung cấp nghề Nhân Lực Quốc Tế" />
+                            <span className="leading-tight dark:text-white-light">
+                                <span className="block text-[15px] font-bold">Nhân Lực Quốc Tế</span>
+                                <span className="block text-[11px] font-medium text-slate-500">Trang quản trị</span>
+                            </span>
                         </NavLink>
 
                         <button
@@ -67,99 +73,69 @@ const Sidebar = () => {
                     </div>
                     <PerfectScrollbar className="h-[calc(100vh-80px)] relative">
                         <ul className="relative font-semibold space-y-0.5 p-4 py-0">
-                            <h2 className="py-3 px-7 flex items-center uppercase font-extrabold bg-white-light/30 dark:bg-dark dark:bg-opacity-[0.08] -mx-4 mb-1">
-                                <IconMinus className="w-4 h-5 flex-none hidden" />
-                                <span>Quản lý sinh viên</span>
+                            <h2 className="-mx-4 mb-1 flex items-center bg-white-light/30 px-7 py-3 text-[11px] font-bold uppercase tracking-wide text-slate-500 dark:bg-dark dark:bg-opacity-[0.08]">
+                                <span>Nội dung website</span>
                             </h2>
 
-                            <li className=" nav-item">
+                            <li className="nav-item">
+                                <NavLink to="/programs" className="group">
+                                    <div className="flex items-center">
+                                        <IconNotesEdit className="shrink-0 group-hover:!text-primary" />
+                                        <span className="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">Ngành đào tạo</span>
+                                    </div>
+                                </NavLink>
+                                <NavLink to="/news" className="group">
+                                    <div className="flex items-center">
+                                        <IconNotes className="shrink-0 group-hover:!text-primary" />
+                                        <span className="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">Bài viết</span>
+                                    </div>
+                                </NavLink>
+                            </li>
+
+                            <h2 className="-mx-4 mb-1 flex items-center bg-white-light/30 px-7 py-3 text-[11px] font-bold uppercase tracking-wide text-slate-500 dark:bg-dark dark:bg-opacity-[0.08]">
+                                <span>Tuyển sinh & học viên</span>
+                            </h2>
+
+                            <li className="nav-item">
+                                <NavLink to="/consultations" className="group">
+                                    <div className="flex items-center">
+                                        <IconInbox className="shrink-0 group-hover:!text-primary" />
+                                        <span className="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">Đơn tư vấn</span>
+                                    </div>
+                                </NavLink>
                                 <NavLink to="/students" className="group">
                                     <div className="flex items-center">
-                                        <IconMenuTables className="group-hover:!text-primary shrink-0" />
-                                        <span className="ltr:pl-3 rtl:pr-3 text-black dark:text-[#506690] dark:group-hover:text-white-dark">Danh sách sinh viên</span>
+                                        <IconUser className="shrink-0 group-hover:!text-primary" />
+                                        <span className="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">Học viên</span>
                                     </div>
                                 </NavLink>
                                 <NavLink to="/student/attendance" className="group">
                                     <div className="flex items-center">
-                                        <IconMenuTables className="group-hover:!text-primary shrink-0" />
-                                        <span className="ltr:pl-3 rtl:pr-3 text-black dark:text-[#506690] dark:group-hover:text-white-dark">Điểm danh</span>
+                                        <IconMenuTables className="shrink-0 group-hover:!text-primary" />
+                                        <span className="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">Điểm danh</span>
                                     </div>
                                 </NavLink>
                                 <NavLink to="/degrees" className="group">
                                     <div className="flex items-center">
-                                        <IconMenuTables className="group-hover:!text-primary shrink-0" />
-                                        <span className="ltr:pl-3 rtl:pr-3 text-black dark:text-[#506690] dark:group-hover:text-white-dark">Danh sách tốt nghiệp</span>
+                                        <IconTag className="shrink-0 group-hover:!text-primary" />
+                                        <span className="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">Văn bằng</span>
                                     </div>
                                 </NavLink>
                             </li>
 
-                            <h2 className="py-3 px-7 flex items-center uppercase font-extrabold bg-white-light/30 dark:bg-dark dark:bg-opacity-[0.08] -mx-4 mb-1">
-                                <IconMinus className="w-4 h-5 flex-none hidden" />
-                                <span>Nội dung đào tạo</span>
+                            <h2 className="-mx-4 mb-1 flex items-center bg-white-light/30 px-7 py-3 text-[11px] font-bold uppercase tracking-wide text-slate-500 dark:bg-dark dark:bg-opacity-[0.08]">
+                                <span>Hệ thống</span>
                             </h2>
 
                             <li className="nav-item">
-                                <ul>
-                                    <li className="nav-item">
-                                        <NavLink to="/programs" className="group">
-                                            <div className="flex items-center">
-                                                <IconNotesEdit className="group-hover:!text-primary shrink-0" />
-                                                <span className="ltr:pl-3 rtl:pr-3 text-black dark:text-[#506690] dark:group-hover:text-white-dark">Danh sách</span>
-                                            </div>
-                                        </NavLink>
-                                    </li>
-                                </ul>
-                            </li>
-
-                            <h2 className="py-3 px-7 flex items-center uppercase font-extrabold bg-white-light/30 dark:bg-dark dark:bg-opacity-[0.08] -mx-4 mb-1">
-                                <IconMinus className="w-4 h-5 flex-none hidden" />
-                                <span>Tin tức</span>
-                            </h2>
-
-                            <li className="nav-item">
-                                <ul>
-                                    <li className="nav-item">
-                                        <NavLink to="/news" className="group">
-                                            <div className="flex items-center">
-                                                <IconNotes className="group-hover:!text-primary shrink-0" />
-                                                <span className="ltr:pl-3 rtl:pr-3 text-black dark:text-[#506690] dark:group-hover:text-white-dark">Danh sách</span>
-                                            </div>
-                                        </NavLink>
-                                    </li>
-                                </ul>
-                            </li>
-
-                            <h2 className="py-3 px-7 flex items-center uppercase font-extrabold bg-white-light/30 dark:bg-dark dark:bg-opacity-[0.08] -mx-4 mb-1">
-                                <IconMinus className="w-4 h-5 flex-none hidden" />
-                                <span>Tư Vấn Tuyển Sinh</span>
-                            </h2>
-
-                            <li className="nav-item">
-                                <ul>
-                                    <li className="nav-item">
-                                        <NavLink to="/consultations" className="group">
-                                            <div className="flex items-center">
-                                                <IconMenuTables className="group-hover:!text-primary shrink-0" />
-                                                <span className="ltr:pl-3 rtl:pr-3 text-black dark:text-[#506690] dark:group-hover:text-white-dark">Danh Sách Đăng Ký</span>
-                                            </div>
-                                        </NavLink>
-                                    </li>
-                                </ul>
-                            </li>
-
-                            <h2 className="py-3 px-7 flex items-center uppercase font-extrabold bg-white-light/30 dark:bg-dark dark:bg-opacity-[0.08] -mx-4 mb-1">
-                                <IconMinus className="w-4 h-5 flex-none hidden" />
-                                <span>Admin</span>
-                            </h2>
-
-                            <li className="menu nav-item">
                                 <NavLink to="/users" className="group">
                                     <div className="flex items-center">
-                                        <IconMenuTables className="group-hover:!text-primary shrink-0" />
-                                        <span className="ltr:pl-3 rtl:pr-3 text-black dark:text-[#506690] dark:group-hover:text-white-dark">Danh sách Admin</span>
+                                        <IconSettings className="shrink-0 group-hover:!text-primary" />
+                                        <span className="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">Tài khoản quản trị</span>
                                     </div>
                                 </NavLink>
                             </li>
+
                         </ul>
                     </PerfectScrollbar>
                 </div>

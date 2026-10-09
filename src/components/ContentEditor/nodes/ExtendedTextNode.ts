@@ -40,6 +40,15 @@ class ExtendedTextNode extends TextNode {
         return new ExtendedTextNode(serializedNode.text).updateFromJSON(serializedNode);
     }
 
+    /**
+     * Lexical mặc định xét `__type === 'text'`, mà node này đổi type thành
+     * 'extended-text' nên bị coi là chữ đặc biệt. Hậu quả: menu "/" và các tính
+     * năng dựa vào isSimpleText() không chạy. Ở đây nó vẫn là chữ thường.
+     */
+    isSimpleText() {
+        return this.__mode === 0;
+    }
+
     static importDOM() {
         const importers = TextNode.importDOM();
         return {

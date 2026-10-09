@@ -9,8 +9,25 @@ import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
 import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
 import { LinkPlugin } from '@lexical/react/LexicalLinkPlugin';
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
+import { MarkdownShortcutPlugin } from '@lexical/react/LexicalMarkdownShortcutPlugin';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
+import { HorizontalRuleNode } from '@lexical/react/LexicalHorizontalRuleNode';
+import { TablePlugin } from '@lexical/react/LexicalTablePlugin';
 import { HeadingNode, QuoteNode } from '@lexical/rich-text';
+import { TableCellNode, TableNode, TableRowNode } from '@lexical/table';
+import {
+    BOLD_ITALIC_STAR,
+    BOLD_STAR,
+    CHECK_LIST,
+    HEADING,
+    INLINE_CODE,
+    ITALIC_STAR,
+    LINK,
+    ORDERED_LIST,
+    QUOTE,
+    STRIKETHROUGH,
+    UNORDERED_LIST,
+} from '@lexical/markdown';
 import { LexicalEditor, TextNode } from 'lexical';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { $loadHtml } from './lib/editorState';
@@ -18,6 +35,11 @@ import { ExtendedTextNode } from './nodes/ExtendedTextNode';
 import { ImageNode } from './nodes/ImageNode';
 import { VideoNode } from './nodes/VideoNode';
 import { ContentChangePlugin } from './plugins/ContentChangePlugin';
+import { BlockPickerPlugin } from './plugins/BlockPickerPlugin';
+import { DragHandlePlugin } from './plugins/DragHandlePlugin';
+import { FloatingFormatToolbar } from './plugins/FloatingFormatToolbar';
+import { FloatingLinkEditor } from './plugins/FloatingLinkEditor';
+import { EdgeParagraphPlugin } from './plugins/EdgeParagraphPlugin';
 import { DraftPlugin } from './plugins/DraftPlugin';
 import { ImagePastePlugin } from './plugins/ImagePastePlugin';
 import { ImagesPlugin } from './plugins/ImagesPlugin';
@@ -33,10 +55,14 @@ type ContentEditorProps = {
     onUploadingChange?: (uploading: boolean) => void;
 };
 
+// Gõ tắt kiểu Markdown. Chỉ bật những cái hay dùng; không bật bảng/ảnh vì đã có nút riêng.
+const MARKDOWN_SHORTCUTS = [HEADING, QUOTE, UNORDERED_LIST, ORDERED_LIST, CHECK_LIST, BOLD_ITALIC_STAR, BOLD_STAR, ITALIC_STAR, STRIKETHROUGH, INLINE_CODE, LINK];
+
 export default function ContentEditor({ initialHtml, draftKey, onChange, onUploadingChange }: ContentEditorProps) {
     const [uploading, setUploadingState] = useState(false);
     const [statistics, setStatistics] = useState({ characters: 0, words: 0 });
     const initialHtmlRef = useRef(initialHtml);
+    const [editorShell, setEditorShell] = useState<HTMLDivElement | null>(null);
     const setUploading = useCallback(
         (value: boolean) => {
             setUploadingState(value);
@@ -56,6 +82,10 @@ export default function ContentEditor({ initialHtml, draftKey, onChange, onUploa
                 LinkNode,
                 AutoLinkNode,
                 CodeNode,
+                HorizontalRuleNode,
+                TableNode,
+                TableRowNode,
+                TableCellNode,
                 ImageNode,
                 VideoNode,
                 ExtendedTextNode,
@@ -93,7 +123,7 @@ export default function ContentEditor({ initialHtml, draftKey, onChange, onUploa
             <div className="news-lexical-editor">
                 <DraftPlugin draftKey={draftKey} initialHtml={initialHtmlRef.current} />
                 <ToolbarPlugin uploading={uploading} setUploading={setUploading} />
-                <div className="lexical-editor-shell">
+                <div className="lexical-editor-shell" ref={setEditorShell}>
                     <RichTextPlugin
                         contentEditable={
                             <ContentEditable
@@ -116,7 +146,14 @@ export default function ContentEditor({ initialHtml, draftKey, onChange, onUploa
             <ListPlugin />
             <CheckListPlugin />
             <LinkPlugin />
+            <TablePlugin hasCellMerge hasCellBackgroundColor={false} />
             <ImagesPlugin />
+            <BlockPickerPlugin />
+            <MarkdownShortcutPlugin transformers={MARKDOWN_SHORTCUTS} />
+            <DragHandlePlugin anchorElem={editorShell} />
+            <FloatingFormatToolbar anchorElem={editorShell} />
+            <FloatingLinkEditor anchorElem={editorShell} />
+            <EdgeParagraphPlugin />
             <ImagePastePlugin setUploading={setUploading} />
             <ContentChangePlugin onChange={onChange} onStatisticsChange={setStatistics} />
         </LexicalComposer>

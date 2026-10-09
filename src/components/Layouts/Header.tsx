@@ -16,7 +16,17 @@ import http from '../../utils/http';
 type AdminInfo = {
     fullName?: string;
     username?: string;
+    role?: 'EDITOR' | 'SUPER_ADMIN';
 };
+
+const ROLE_LABEL: Record<string, string> = { EDITOR: 'Biên tập', SUPER_ADMIN: 'Quản trị' };
+
+/** Chữ cái đầu của tên, dùng thay ảnh đại diện */
+function initialsOf(info: AdminInfo | null) {
+    const words = (info?.fullName || info?.username || '').trim().split(/\s+/).filter(Boolean);
+    if (words.length === 0) return '?';
+    return (words.length === 1 ? words[0].slice(0, 2) : words[words.length - 2][0] + words[words.length - 1][0]).toUpperCase();
+}
 
 const Header = () => {
     const location = useLocation();
@@ -104,16 +114,20 @@ const Header = () => {
                                 offset={[0, 8]}
                                 placement={`${isRtl ? 'bottom-start' : 'bottom-end'}`}
                                 btnClassName="relative group block"
-                                button={<img className="w-9 h-9 rounded-full object-cover saturate-50 group-hover:saturate-100" src="/assets/images/user-profile.jpeg" alt="userProfile" />}
+                                button={
+                                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
+                                        {initialsOf(adminInfo)}
+                                    </span>
+                                }
                             >
                                 <ul className="text-dark dark:text-white-dark !py-0 w-[230px] font-semibold dark:text-white-light/90">
                                     <li>
                                         <div className="flex items-center px-4 py-4">
-                                            <img className="rounded-md w-10 h-10 object-cover" src="/assets/images/user-profile.jpeg" alt="userProfile" />
+                                            <span className="flex h-10 w-10 items-center justify-center rounded-md bg-primary text-sm font-bold text-white">{initialsOf(adminInfo)}</span>
                                             <div className="ltr:pl-4 rtl:pr-4 truncate">
                                                 <h4 className="text-base">
                                                     {adminInfo?.fullName}
-                                                    <span className="text-xs bg-success-light rounded text-success px-1 ltr:ml-2 rtl:ml-2">Pro</span>
+                                                    {adminInfo?.role && <span className="rounded bg-primary-light px-1.5 text-xs text-primary ltr:ml-2 rtl:ml-2">{ROLE_LABEL[adminInfo.role] || adminInfo.role}</span>}
                                                 </h4>
                                                 <button type="button" className="text-black/60 hover:text-primary dark:text-dark-light/60 dark:hover:text-white">
                                                     {adminInfo?.username}

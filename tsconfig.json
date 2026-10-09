@@ -14,6 +14,9 @@
         "resolveJsonModule": true,
         "isolatedModules": true,
         "noEmit": true,
+        // Cho phép ghi rõ đuôi .ts trong import: Vite hiểu, và Node chạy test cũng hiểu
+        // (Node không tự đoán đuôi như bundler)
+        "allowImportingTsExtensions": true,
         "jsx": "react-jsx"
     },
     "include": ["src"]

@@ -1,8 +1,12 @@
 // Node video nhúng (iframe). Giữ nguyên type 'news-video' để không vỡ nội dung đã lưu.
-import { DecoratorNode, NodeKey, SerializedLexicalNode, Spread } from 'lexical';
+import { DecoratorNode, LexicalNode, NodeKey, SerializedLexicalNode, Spread } from 'lexical';
 import { ReactNode } from 'react';
 
 export { VideoNode, $createVideoNode };
+
+export function $isVideoNode(node: LexicalNode | null | undefined): node is VideoNode {
+    return node instanceof VideoNode;
+}
 
 type SerializedVideoNode = Spread<{ src: string; type: 'news-video'; version: 1 }, SerializedLexicalNode>;
 

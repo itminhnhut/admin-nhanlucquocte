@@ -16,7 +16,7 @@ import {
     KEY_ENTER_COMMAND,
     KEY_ESCAPE_COMMAND,
 } from 'lexical';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { askText } from '../lib/dialogs';
 import type { ImageAlignment } from '../lib/html';
 import { $isImageNode } from '../nodes/ImageNode';
@@ -48,11 +48,45 @@ function SelectableImage({
     const [selected, setSelected, clearSelection] = useLexicalNodeSelection(nodeKey);
     const isEditable = useLexicalEditable();
     const imageRef = useRef<HTMLImageElement>(null);
+    // Vùng soạn là khung cuộn riêng (max-height + overflow), nên menu phải tự ghim
+    // vào phần ảnh còn nhìn thấy, không thì bị cắt mất khi ảnh cao hoặc nằm sát mép.
+    const [menuTop, setMenuTop] = useState<number | null>(null);
     const selectedRef = useRef(selected);
 
     useEffect(() => {
         selectedRef.current = selected;
     }, [selected]);
+
+    useEffect(() => {
+        if (!selected) {
+            setMenuTop(null);
+            return;
+        }
+        const image = imageRef.current;
+        const scroller = image?.closest('.lexical-content-editable') as HTMLElement | null;
+        if (!image || !scroller) return;
+
+        const MENU_HEIGHT = 46;
+        const EDGE_GAP = 8;
+        const update = () => {
+            const imageBox = image.getBoundingClientRect();
+            const scrollBox = scroller.getBoundingClientRect();
+            const stage = image.parentElement?.getBoundingClientRect();
+            if (!stage) return;
+            // Mặc định nằm trên ảnh; hết chỗ thì tụt xuống đè lên phần trên của ảnh
+            const wanted = Math.max(scrollBox.top + EDGE_GAP, imageBox.top - MENU_HEIGHT - 10);
+            const lowest = imageBox.bottom - MENU_HEIGHT - EDGE_GAP;
+            setMenuTop(Math.min(wanted, Math.max(lowest, scrollBox.top + EDGE_GAP)) - stage.top);
+        };
+
+        update();
+        scroller.addEventListener('scroll', update, { passive: true });
+        window.addEventListener('resize', update);
+        return () => {
+            scroller.removeEventListener('scroll', update);
+            window.removeEventListener('resize', update);
+        };
+    }, [selected, alignment, width, height]);
 
     useEffect(() => {
         const removeSelectedImage = (event: KeyboardEvent | null) => {
@@ -160,7 +194,11 @@ function SelectableImage({
         <span className={`lexical-image-selection lexical-align-${alignment} ${selected ? 'is-selected' : ''}`}>
             <span className="lexical-image-stage">
                 {selected && (
-                    <span className="lexical-image-context-menu" contentEditable={false}>
+                    <span
+                        className={`lexical-image-context-menu ${menuTop === null ? '' : 'is-pinned'}`}
+                        style={menuTop === null ? undefined : { top: menuTop, bottom: 'auto' }}
+                        contentEditable={false}
+                    >
                         <span>Canh ảnh</span>
                         <button className={alignment === 'left' ? 'is-active' : ''} type="button" title="Canh trái" onMouseDown={(event) => event.preventDefault()} onClick={() => updateImage('left')}><Icon name="alignLeft" /></button>
                         <button className={alignment === 'center' ? 'is-active' : ''} type="button" title="Canh giữa" onMouseDown={(event) => event.preventDefault()} onClick={() => updateImage('center')}><Icon name="alignCenter" /></button>

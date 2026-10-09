@@ -443,7 +443,8 @@
 
 .lexical-image-context-menu {
     position: absolute;
-    z-index: 20;
+    /* Cao hơn thanh công cụ dính (z-index 35) để không bị nó che */
+    z-index: 40;
     bottom: calc(100% + 10px);
     left: 50%;
     display: flex;
@@ -850,4 +851,323 @@
 /* Có thanh nháp thì toolbar không bo góc trên nữa */
 .lexical-draft-bar + .lexical-toolbar {
     border-radius: 0;
+}
+
+/* Menu ảnh đã được ghim bằng toạ độ tính sẵn: bỏ mũi tên vì nó không còn
+   luôn nằm ngay trên ảnh nữa */
+.lexical-image-context-menu.is-pinned::after {
+    display: none;
+}
+
+/* ── Điện thoại: toolbar đang gãy 6 hàng, đẩy vùng viết xuống quá sâu ───────
+   Ẩn phông chữ và cỡ chữ (hiếm dùng trên điện thoại, vẫn còn đủ trên máy tính),
+   thu nhỏ vùng soạn cho vừa màn hình. */
+@media (max-width: 767px) {
+    .lexical-toolbar .lexical-dropdown-trigger,
+    .lexical-toolbar button {
+        min-height: 34px;
+        padding: 5px 8px;
+    }
+
+    .lexical-font-size,
+    .lexical-toolbar-group:nth-child(3) .lexical-dropdown {
+        display: none;
+    }
+
+    .lexical-content-editable {
+        min-height: 220px;
+        padding: 18px 16px;
+    }
+
+    .lexical-color-group label span:not(:empty) {
+        display: none;
+    }
+
+    .lexical-color-group label {
+        padding: 6px 9px 9px;
+    }
+}
+
+/* ── Tay kéo đổi chỗ đoạn (⠿) ───────────────────────────────────────────── */
+.lexical-drag-handle {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    width: 22px;
+    height: 24px;
+    cursor: grab;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+    background: #fff;
+    color: #94a3b8;
+    opacity: 0;
+    transition: background 120ms ease, color 120ms ease;
+    will-change: transform;
+}
+
+.lexical-drag-handle:hover {
+    background: #eef2ff;
+    color: #475569;
+}
+
+.lexical-drag-handle:active {
+    cursor: grabbing;
+}
+
+.lexical-drag-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 3px;
+    border-radius: 2px;
+    background: #DB1010;
+    opacity: 0;
+    pointer-events: none;
+    will-change: transform;
+}
+
+/* ── Bảng trong bài ──────────────────────────────────────────────────────── */
+.lexical-content-editable table {
+    width: 100%;
+    max-width: 100%;
+    margin: 18px 0;
+    border-collapse: collapse;
+    table-layout: fixed;
+    overflow-x: auto;
+}
+
+.lexical-content-editable th,
+.lexical-content-editable td {
+    position: relative;
+    min-width: 72px;
+    border: 1px solid #cbd5e1;
+    padding: 8px 10px;
+    vertical-align: top;
+}
+
+.lexical-content-editable th {
+    background: #f1f5f9;
+    font-weight: 600;
+}
+
+/* Ô đang được chọn khi kéo chuột qua nhiều ô */
+.lexical-content-editable td[data-lexical-selected],
+.lexical-content-editable th[data-lexical-selected] {
+    background: rgb(219 16 16 / 8%);
+    outline: 2px solid rgb(219 16 16 / 35%);
+}
+
+/* ── Thanh định dạng nổi khi bôi đen chữ ─────────────────────────────────── */
+.lexical-floating-toolbar {
+    position: absolute;
+    z-index: 45;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 4px;
+    transform: translateX(-50%);
+    border: 1px solid #e2e8f0;
+    border-radius: 9px;
+    background: #fff;
+    box-shadow: 0 10px 28px rgb(15 23 42 / 18%);
+}
+
+.lexical-floating-toolbar button {
+    display: flex;
+    width: 32px;
+    height: 32px;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: #334155;
+}
+
+.lexical-floating-toolbar button:hover {
+    background: #eef2ff;
+    color: #DB1010;
+}
+
+.lexical-floating-toolbar button.is-active {
+    background: #FFE8E8;
+    color: #DB1010;
+}
+
+.lexical-floating-divider {
+    width: 1px;
+    height: 20px;
+    margin: 0 3px;
+    background: #e2e8f0;
+}
+
+/* ── Menu chọn khối khi gõ "/" ───────────────────────────────────────────── */
+.lexical-block-picker {
+    position: absolute;
+    z-index: 55;
+    display: flex;
+    width: 262px;
+    max-height: 330px;
+    overflow-y: auto;
+    flex-direction: column;
+    gap: 1px;
+    padding: 5px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 12px 32px rgb(15 23 42 / 18%);
+}
+
+.lexical-block-picker-hint {
+    padding: 5px 9px 7px;
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+.lexical-block-picker button {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    padding: 8px 9px;
+    color: #334155;
+    font-size: 14px;
+    text-align: left;
+}
+
+.lexical-block-picker button:hover,
+.lexical-block-picker button.is-active {
+    background: #FFE8E8;
+    color: #DB1010;
+}
+
+/* Đường kẻ ngang trong bài */
+.lexical-content-editable hr {
+    height: 1px;
+    margin: 18px 0;
+    border: 0;
+    background: #cbd5e1;
+}
+
+.lexical-content-editable hr.selected {
+    outline: 2px solid #DB1010;
+}
+
+/* ── Ô sửa liên kết, hiện khi con trỏ nằm trong một link ─────────────────── */
+.lexical-link-bar {
+    position: absolute;
+    z-index: 46;
+    display: flex;
+    max-width: min(460px, 92%);
+    align-items: center;
+    gap: 7px;
+    padding: 6px 9px;
+    border: 1px solid #e2e8f0;
+    border-radius: 9px;
+    background: #fff;
+    box-shadow: 0 10px 28px rgb(15 23 42 / 18%);
+    color: #475569;
+    font-size: 13px;
+}
+
+.lexical-link-url {
+    overflow: hidden;
+    max-width: 220px;
+    color: #1e293b;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.lexical-link-bar a,
+.lexical-link-bar button {
+    flex: 0 0 auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: #fff;
+    padding: 4px 9px;
+    color: #334155;
+    font-size: 12.5px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.lexical-link-bar a:hover,
+.lexical-link-bar button:hover {
+    border-color: #DB1010;
+    background: #FFE8E8;
+    color: #DB1010;
+}
+
+.lexical-link-bar button.is-danger {
+    color: #DB1010;
+}
+
+/* ── Menu khối mở từ tay kéo ⠿ (có ô lọc) ───────────────────────────────── */
+.lexical-block-picker.is-handle-menu {
+    width: 268px;
+    overflow: hidden;
+}
+
+/* Danh sách tự co để cả menu vừa chỗ trống; phần thừa thì cuộn bên trong */
+.lexical-block-picker.is-handle-menu .lexical-block-picker-list {
+    max-height: none;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.lexical-block-picker-filter {
+    width: 100%;
+    border: 1px solid #e2e8f0;
+    border-radius: 7px;
+    background: #fff;
+    padding: 7px 10px;
+    color: #1e293b;
+    font-size: 13.5px;
+    outline: none;
+}
+
+.lexical-block-picker-filter:focus {
+    border-color: #DB1010;
+}
+
+.lexical-block-picker-filter::placeholder {
+    color: #94a3b8;
+}
+
+.lexical-block-picker-list {
+    display: flex;
+    max-height: 272px;
+    overflow-y: auto;
+    flex-direction: column;
+    gap: 1px;
+    margin-top: 5px;
+}
+
+.lexical-block-picker-empty {
+    padding: 10px;
+    color: #94a3b8;
+    font-size: 13px;
+}
+
+.lexical-block-picker-remove {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-top: 5px;
+    border: 0;
+    border-top: 1px solid #f1f5f9;
+    border-radius: 0 0 7px 7px;
+    background: transparent;
+    padding: 9px;
+    color: #DB1010;
+    font-size: 13.5px;
+    text-align: left;
+}
+
+.lexical-block-picker-remove:hover {
+    background: #FFE8E8;
 }

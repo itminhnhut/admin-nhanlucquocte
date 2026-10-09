@@ -14,6 +14,7 @@ import { $createHeadingNode, $createQuoteNode, HeadingNode } from '@lexical/rich
 import { $getSelectionStyleValueForProperty, $patchStyleText, $setBlocksType } from '@lexical/selection';
 import { $insertNodeToNearestRoot, mergeRegister } from '@lexical/utils';
 import { CodeNode } from '@lexical/code';
+import { INSERT_TABLE_COMMAND } from '@lexical/table';
 import {
     $createParagraphNode,
     $getSelection,
@@ -34,7 +35,7 @@ import {
 } from 'lexical';
 import { ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import Swal from 'sweetalert2';
-import { askUrl } from '../lib/dialogs';
+import { askTableSize, askUrl } from '../lib/dialogs';
 import { uploadNewsImage } from '../lib/upload';
 import { $isImageNode } from '../nodes/ImageNode';
 import { $createVideoNode } from '../nodes/VideoNode';
@@ -71,6 +72,7 @@ const ALIGN_ITEMS: readonly DropdownItem[] = [
 const INSERT_ITEMS: readonly DropdownItem[] = [
     { value: 'image', label: 'Ảnh', icon: 'image', hint: 'Tải ảnh từ máy lên' },
     { value: 'video', label: 'Video', icon: 'video', hint: 'Dán link YouTube hoặc iframe' },
+    { value: 'table', label: 'Bảng', icon: 'table', hint: 'Chọn số dòng và số cột' },
 ];
 
 const FORMAT_ITEMS: readonly DropdownItem[] = [
@@ -257,6 +259,11 @@ function ToolbarPlugin({ uploading, setUploading }: { uploading: boolean; setUpl
     const handleInsert = async (value: string) => {
         if (value === 'image') {
             fileInputRef.current?.click();
+            return;
+        }
+        if (value === 'table') {
+            const size = await askTableSize();
+            if (size) editor.dispatchCommand(INSERT_TABLE_COMMAND, size);
             return;
         }
         const url = await askUrl({
