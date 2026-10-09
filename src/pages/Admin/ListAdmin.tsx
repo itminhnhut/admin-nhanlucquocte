@@ -1,7 +1,9 @@
+import { formatDate } from '../../utils/formatDate';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import Swal from 'sweetalert2';
 import SearchInput from '../../components/SearchInput';
+import StatusBadge from '../../components/StatusBadge';
 import DataTable, { type Column } from '../../components/table/DataTable';
 import { setPageTitle } from '../../store/themeConfigSlice';
 import { Admin, AdminListResponse } from '../../types/admin';
@@ -16,11 +18,6 @@ function initialsOf(fullName: string, username: string) {
     return (words.length === 1 ? words[0].slice(0, 2) : words[words.length - 2][0] + words[words.length - 1][0]).toUpperCase();
 }
 
-function formatDate(date: string) {
-    if (!date) return '-';
-    const value = new Date(date);
-    return `${String(value.getDate()).padStart(2, '0')}/${String(value.getMonth() + 1).padStart(2, '0')}/${value.getFullYear()}`;
-}
 
 function ListAdmin() {
     const dispatch = useDispatch();
@@ -69,7 +66,7 @@ function ListAdmin() {
             ),
         },
         { key: 'username', title: 'Tên đăng nhập', sortable: true },
-        { key: 'role', title: 'Quyền', sortable: true, render: ({ role }) => <span className="badge bg-primary-light text-primary">{ROLE_LABEL[role] || role}</span> },
+        { key: 'role', title: 'Quyền', sortable: true, render: ({ role }) => <StatusBadge tone={role === 'SUPER_ADMIN' ? 'brand' : 'muted'}>{ROLE_LABEL[role] || role}</StatusBadge> },
         { key: 'createdAt', title: 'Ngày tạo', sortable: true, render: ({ createdAt }) => <>{formatDate(createdAt)}</> },
     ];
 

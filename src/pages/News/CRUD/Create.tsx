@@ -8,7 +8,7 @@ import Select, { type StylesConfig } from 'react-select';
 import { createSlugFromTitle } from '../../../utils/slug';
 import { refreshSitemap } from '../../../utils/sitemap';
 import { SITEMAP_REFRESH_URL } from '../../../configs/env';
-import { notBlank, trimStrings } from '../../../utils/trimStrings';
+import { notBlank, cleanPayload } from '../../../utils/cleanInput';
 import ContentEditor from '../../../components/ContentEditor';
 import CoverImageField from '../../../components/CoverImageField';
 import { clearEditorDraft } from '../../../components/ContentEditor/plugins/DraftPlugin';
@@ -324,7 +324,7 @@ const NewsForm = () => {
         // Sanitize editor content to strip base64 images
         const cleanedContent = stripBase64Images(value2);
 
-        const payload = trimStrings({
+        const payload = cleanPayload({
             title,
             slug,
             content: cleanedContent,

@@ -1,6 +1,5 @@
+import { formatDate } from '../../utils/formatDate';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import Tippy from '@tippyjs/react';
-import 'tippy.js/dist/tippy.css';
 import { useDispatch } from 'react-redux';
 import { setPageTitle } from '../../store/themeConfigSlice';
 import IconPencil from '../../components/Icon/IconPencil';
@@ -12,6 +11,8 @@ import { SITEMAP_REFRESH_URL } from '../../configs/env';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
 import SearchInput from '../../components/SearchInput';
+import StatusBadge from '../../components/StatusBadge';
+import RowAction from '../../components/table/RowAction';
 import DataTable, { type Column } from '../../components/table/DataTable';
 import TextWithCopy from '../../components/TextWithCopy';
 
@@ -80,7 +81,7 @@ const NewsTables = () => {
     };
 
     useEffect(() => {
-        dispatch(setPageTitle('Danh sách tin tức'));
+        dispatch(setPageTitle('Bài viết'));
     }, [dispatch]);
 
     useEffect(() => {
@@ -100,14 +101,6 @@ const NewsTables = () => {
         setPage(1);
     }, [search]);
 
-    const formatDate = (date?: string) => {
-        if (!date) return '-';
-        const dt = new Date(date);
-        const d = dt.getDate().toString().padStart(2, '0');
-        const m = (dt.getMonth() + 1).toString().padStart(2, '0');
-        const y = dt.getFullYear();
-        return `${d}/${m}/${y}`;
-    };
 
     const handleSearch = useCallback((keyword: string) => setSearch(keyword), []);
 
@@ -137,25 +130,21 @@ const NewsTables = () => {
     const columns: Column<NewsItem>[] = [
         { key: 'title', title: 'Tiêu đề', render: ({ title }) => <TextWithCopy text={title} className="text-multiline-2" /> },
         { key: 'summary', title: 'Tóm tắt', render: ({ summary }) => <TextWithCopy text={summary ?? ''} className="text-multiline-2" /> },
-        { key: 'isHot', title: 'Nổi bật', render: ({ isHot }) => <span className={isHot ? 'font-semibold text-primary' : 'text-slate-400'}>{isHot ? 'Nổi bật' : 'Thường'}</span> },
-        { key: 'published', title: 'Trạng thái', render: ({ published }) => <span className={published ? 'badge bg-success' : 'badge bg-warning'}>{published ? 'Đã xuất bản' : 'Nháp'}</span> },
+        { key: 'isHot', title: 'Nổi bật', render: ({ isHot }) => (isHot ? <StatusBadge tone="brand">Nổi bật</StatusBadge> : <span className="text-slate-400">Thường</span>) },
+        { key: 'published', title: 'Trạng thái', render: ({ published }) => <StatusBadge tone={published ? 'ok' : 'muted'}>{published ? 'Đã xuất bản' : 'Nháp'}</StatusBadge> },
         { key: 'createdAt', title: 'Ngày tạo', render: ({ createdAt }) => <>{formatDate(createdAt)}</> },
         {
             key: 'action',
             title: 'Thao tác',
             align: 'center',
             render: (item) => (
-                <div className="mx-auto flex w-max items-center gap-2">
-                    <Tippy content="Sửa">
-                        <button type="button" onClick={() => navigate(`/news/${item.id}/edit`)}>
-                            <IconPencil />
-                        </button>
-                    </Tippy>
-                    <Tippy content="Xoá">
-                        <button type="button" onClick={() => removePost(item)}>
-                            <IconTrashLines />
-                        </button>
-                    </Tippy>
+                <div className="mx-auto flex w-max items-center gap-1">
+                    <RowAction title="Sửa bài viết" onClick={() => navigate(`/news/${item.id}/edit`)}>
+                        <IconPencil />
+                    </RowAction>
+                    <RowAction variant="danger" title="Xoá bài viết" onClick={() => removePost(item)}>
+                        <IconTrashLines />
+                    </RowAction>
                 </div>
             ),
         },
@@ -165,7 +154,7 @@ const NewsTables = () => {
         <section>
             <div className="panel mt-6">
                 <div className="flex items-center justify-between flex-wrap gap-4">
-                    <h2 className="text-xl">Danh sách tin tức</h2>
+                    <h2 className="text-xl">Bài viết</h2>
                     <div className="flex sm:flex-row flex-col sm:items-center sm:gap-3 gap-4 w-full sm:w-auto">
                         <button type="button" className="btn btn-primary" onClick={() => navigate('/news/create')}>
                             <IconPlus className="ltr:mr-2 rtl:ml-2" />

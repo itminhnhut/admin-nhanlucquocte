@@ -1,3 +1,4 @@
+import { formatDate } from '../../utils/formatDate';
 import 'flatpickr/dist/flatpickr.css';
 import DataTable from '../../components/table/DataTable';
 import { useEffect, useState } from 'react';
@@ -80,22 +81,13 @@ const AttendanceList = () => {
         fetchAttendances(page, pageSize, search);
     }, [page, pageSize, search]);
 
-    const formatDate = (date: string | number | Date) => {
-        if (date) {
-            const dt = new Date(date);
-            const month = dt.getMonth() + 1 < 10 ? '0' + (dt.getMonth() + 1) : dt.getMonth() + 1;
-            const day = dt.getDate() < 10 ? '0' + dt.getDate() : dt.getDate();
-            return day + '/' + month + '/' + dt.getFullYear();
-        }
-        return '';
-    };
 
     return (
         <section>
             <div>
                 <div className="panel mt-6">
                     <div className="flex items-center justify-between flex-wrap gap-4">
-                        <h2 className="text-xl uppercase">Danh sách điểm danh</h2>
+                        <h2 className="text-xl">Điểm danh</h2>
                         <div className="flex sm:flex-row flex-col sm:items-center sm:gap-3 gap-4 w-full sm:w-auto">
                             <div className="relative">
                                 <input type="text" placeholder="Tìm kiếm" className="form-input py-2 ltr:pr-11 rtl:pl-11 peer" value={searchInput} onChange={(e) => setSearchInput(e.target.value)} />

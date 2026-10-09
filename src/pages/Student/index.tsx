@@ -1,3 +1,4 @@
+import { formatDate } from '../../utils/formatDate';
 import Flatpickr from 'react-flatpickr';
 import 'flatpickr/dist/flatpickr.css';
 import Select from 'react-select';
@@ -14,10 +15,12 @@ import IconPlus from '../../components/Icon/IconPlus';
 import IconX from '../../components/Icon/IconX';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import IconSearch from '../../components/Icon/IconSearch';
+import StatusBadge from '../../components/StatusBadge';
+import InfoCell from '../../components/table/InfoCell';
 import TextWithCopy from '../../components/TextWithCopy';
 import Drawer from '../../components/Drawer';
 import http from '../../utils/http';
-import { notBlank, trimStrings } from '../../utils/trimStrings';
+import { notBlank, cleanPayload } from '../../utils/cleanInput';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
 
@@ -155,7 +158,7 @@ const StudentsTables = () => {
     };
 
     useEffect(() => {
-        dispatch(setPageTitle('Danh sách sinh viên'));
+        dispatch(setPageTitle('Học viên'));
     }, [dispatch]);
 
     useEffect(() => {
@@ -177,18 +180,9 @@ const StudentsTables = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [page, pageSize, search]);
 
-    const formatDate = (date: string | number | Date) => {
-        if (date) {
-            const dt = new Date(date);
-            const month = dt.getMonth() + 1 < 10 ? '0' + (dt.getMonth() + 1) : dt.getMonth() + 1;
-            const day = dt.getDate() < 10 ? '0' + dt.getDate() : dt.getDate();
-            return day + '/' + month + '/' + dt.getFullYear();
-        }
-        return '';
-    };
 
     const onSubmit: SubmitHandler<StudentFormValues> = async (values) => {
-        const payload = trimStrings({
+        const payload = cleanPayload({
             studentCode: values.studentCode,
             fullName: values.fullName,
             cccd: values.cccd,
@@ -238,7 +232,7 @@ const StudentsTables = () => {
     const handleGraduationSubmit = async () => {
         if (!selectedStudentForGraduation) return;
 
-        const payload = trimStrings({
+        const payload = cleanPayload({
             cccd: selectedStudentForGraduation.cccd,
             fullName: selectedStudentForGraduation.fullName,
             dob: selectedStudentForGraduation.dob,
@@ -294,7 +288,7 @@ const StudentsTables = () => {
             <div>
                 <div className="panel mt-6">
                     <div className="flex items-center justify-between flex-wrap gap-4">
-                        <h2 className="text-xl">Danh sách sinh viên</h2>
+                        <h2 className="text-xl">Học viên</h2>
                         <div className="flex sm:flex-row flex-col sm:items-center sm:gap-3 gap-4 w-full sm:w-auto">
                             <div className="flex gap-3">
                                 <button
@@ -341,45 +335,42 @@ const StudentsTables = () => {
                             rows={students}
                             columns={[
                                 {
-                                    key: 'studentCode',
-                                    title: 'Mã SV',
-                                    render: ({ studentCode }) => <TextWithCopy text={studentCode} />,
-                                },
-                                {
                                     key: 'fullName',
-                                    title: 'Họ và tên',
-                                    render: ({ fullName }) => <TextWithCopy text={fullName} />,
-                                },
-                                {
-                                    key: 'cccd',
-                                    title: 'CCCD',
-                                    render: ({ cccd }) => <TextWithCopy text={cccd} />,
+                                    title: 'Học viên',
+                                    sortable: true,
+                                    className: 'min-w-[220px]',
+                                    render: ({ fullName, studentCode, cccd }) => (
+                                        <InfoCell
+                                            rows={[
+                                                [{ value: fullName, strong: true, copy: true }],
+                                                [
+                                                    { label: 'Mã SV', value: studentCode, copy: true },
+                                                    { label: 'CCCD', value: cccd, copy: true },
+                                                ],
+                                            ]}
+                                        />
+                                    ),
                                 },
                                 {
                                     key: 'class',
                                     title: 'Lớp',
+                                    sortable: true,
+                                    render: (student) => <span className="whitespace-nowrap">{(student as any).className || (student as any).class || '—'}</span>,
                                 },
-                                // {
-                                //     key: 'email',
-                                //     title: 'Email',
-                                // },
                                 {
                                     key: 'dob',
                                     title: 'Ngày sinh',
-                                    render: ({ dob }) => <div>{dob ? formatDate(dob) : '-'}</div>,
+                                    sortable: true,
+                                    render: ({ dob }) => <span className="whitespace-nowrap">{dob ? formatDate(dob) : '—'}</span>,
                                 },
-                                // {
-                                //     key: 'phone',
-                                //     title: 'Số điện thoại',
-                                // },
                                 {
-                                    key: 'createdAt',
-                                    title: 'Ngày tạo',
-                                    render: ({ createdAt }) => <div>{createdAt ? formatDate(createdAt) : '-'}</div>,
+                                    key: 'isDegree',
+                                    title: 'Tốt nghiệp',
+                                    render: ({ isDegree }) => <StatusBadge tone={isDegree ? 'ok' : 'muted'}>{isDegree ? 'Đã có bằng' : 'Chưa'}</StatusBadge>,
                                 },
                                 {
                                     key: 'action',
-                                    title: 'Action',
+                                    title: 'Thao tác',
                                     align: 'center',
                                     render: (student: Student) => (
                                         <div className="flex items-start w-max gap-2">
@@ -389,9 +380,9 @@ const StudentsTables = () => {
                                                     onClick={() => {
                                                         navigate(`/students/${student.id}/attendance`);
                                                     }}
-                                                    className="btn px-2 py-1 text-xs btn-info"
+                                                    className="whitespace-nowrap rounded-md bg-primary-light px-2.5 py-1 text-xs font-semibold text-primary transition-colors hover:bg-primary hover:text-white"
                                                 >
-                                                    ĐIỂM DANH
+                                                    Điểm danh
                                                 </button>
                                             </Tippy>
 
@@ -410,9 +401,9 @@ const StudentsTables = () => {
                                                             });
                                                             setGraduationModalOpen(true);
                                                         }}
-                                                        className="btn px-2 py-1 text-xs btn-warning"
+                                                        className="whitespace-nowrap rounded-md bg-primary-light px-2.5 py-1 text-xs font-semibold text-primary transition-colors hover:bg-primary hover:text-white"
                                                     >
-                                                        TỐT NGHIỆP
+                                                        Tốt nghiệp
                                                     </button>
                                                 </Tippy>
                                             ) : (
@@ -454,9 +445,9 @@ const StudentsTables = () => {
                                                                 });
                                                             }
                                                         }}
-                                                        className="btn px-2 py-1 text-xs btn-success"
+                                                        className="whitespace-nowrap rounded-md bg-primary-light px-2.5 py-1 text-xs font-semibold text-primary transition-colors hover:bg-primary hover:text-white"
                                                     >
-                                                        XEM BẰNG
+                                                        Xem bằng
                                                     </button>
                                                 </Tippy>
                                             )}
@@ -477,7 +468,7 @@ const StudentsTables = () => {
                                                         });
                                                         setAddModalOpen(true);
                                                     }}
-                                                >
+                                                className="rounded-md p-1.5 text-slate-500 transition-colors hover:bg-primary-light hover:text-primary">
                                                     <IconPencil />
                                                 </button>
                                             </Tippy>
@@ -516,7 +507,7 @@ const StudentsTables = () => {
                                                             }
                                                         }
                                                     }}
-                                                >
+                                                className="rounded-md p-1.5 text-danger transition-colors hover:bg-danger hover:text-white">
                                                     <IconTrashLines />
                                                 </button>
                                             </Tippy>

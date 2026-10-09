@@ -35,7 +35,9 @@ const defaultState = {
 };
 
 const initialState = {
-    theme: localStorage.getItem('theme') || themeConfig.theme,
+    // Chỉ dùng nền sáng. Không đọc lại lựa chọn cũ trong máy để người từng bật
+    // nền tối trước đây cũng quay về sáng.
+    theme: 'light',
     menu: localStorage.getItem('menu') || themeConfig.menu,
     layout: localStorage.getItem('layout') || themeConfig.layout,
     rtlClass: localStorage.getItem('rtlClass') || themeConfig.rtlClass,
@@ -44,7 +46,7 @@ const initialState = {
     locale: localStorage.getItem('i18nextLng') || themeConfig.locale,
     isDarkMode: false,
     sidebar: localStorage.getItem('sidebar') || defaultState.sidebar,
-    semidark: localStorage.getItem('semidark') || themeConfig.semidark,
+    semidark: false,
     languageList: [
         { code: 'zh', name: 'Chinese' },
         { code: 'da', name: 'Danish' },

@@ -21,10 +21,12 @@ module.exports = {
                     light: '#FFE8E8',
                     'dark-light': 'rgba(219,16,16,.15)',
                 },
+                // Tím của template -> xám trung tính. Nút Hủy/Đóng dùng
+                // btn-outline-secondary nên trước đây hiện ra màu tím.
                 secondary: {
-                    DEFAULT: '#805dca',
-                    light: '#ebe4f7',
-                    'dark-light': 'rgb(128 93 202 / 15%)',
+                    DEFAULT: '#64748b',
+                    light: '#f1f5f9',
+                    'dark-light': 'rgb(100 116 139 / 15%)',
                 },
                 success: {
                     DEFAULT: '#00ab55',
@@ -41,10 +43,12 @@ module.exports = {
                     light: '#fff9ed',
                     'dark-light': 'rgba(226,160,63,.15)',
                 },
+                // Xanh dương của template -> xám. Giữ tên để không phải sửa
+                // mọi class, nhưng không còn thêm một màu lạ vào giao diện.
                 info: {
-                    DEFAULT: '#2196f3',
-                    light: '#e7f7ff',
-                    'dark-light': 'rgba(33,150,243,.15)',
+                    DEFAULT: '#64748b',
+                    light: '#f1f5f9',
+                    'dark-light': 'rgb(100 116 139 / 15%)',
                 },
                 dark: {
                     DEFAULT: '#3b3f5c',

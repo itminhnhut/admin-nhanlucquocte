@@ -1,3 +1,4 @@
+import { formatDate } from '../../utils/formatDate';
 import 'flatpickr/dist/flatpickr.css';
 import DataTable from '../../components/table/DataTable';
 import { useEffect, useState } from 'react';
@@ -7,6 +8,8 @@ import 'tippy.js/dist/tippy.css';
 import IconSearch from '../../components/Icon/IconSearch';
 import IconX from '../../components/Icon/IconX';
 import IconTrashLines from '../../components/Icon/IconTrashLines';
+import StatusBadge, { type BadgeTone } from '../../components/StatusBadge';
+import InfoCell from '../../components/table/InfoCell';
 import TextWithCopy from '../../components/TextWithCopy';
 import http from '../../utils/http';
 import Swal from 'sweetalert2';
@@ -33,7 +36,15 @@ const DegreesList = () => {
     const [total, setTotal] = useState(0);
     const [loading, setLoading] = useState(false);
     const [page, setPage] = useState(1);
-    const PAGE_SIZES = [10];
+    /** Màu theo hạng tốt nghiệp. Giỏi trở lên xanh, khá vàng, còn lại xám. */
+function rankTone(rank?: string): BadgeTone {
+    const value = (rank || '').toLowerCase();
+    if (value.includes('xuất sắc') || value.includes('giỏi')) return 'ok';
+    if (value.includes('khá')) return 'warn';
+    return 'muted';
+}
+
+const PAGE_SIZES = [10];
     const [pageSize, setPageSize] = useState(PAGE_SIZES[0]);
 
     const [search, setSearch] = useState('');
@@ -88,15 +99,6 @@ const DegreesList = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [page, pageSize, search]);
 
-    const formatDate = (date: string | number | Date) => {
-        if (date) {
-            const dt = new Date(date);
-            const month = dt.getMonth() + 1 < 10 ? '0' + (dt.getMonth() + 1) : dt.getMonth() + 1;
-            const day = dt.getDate() < 10 ? '0' + dt.getDate() : dt.getDate();
-            return day + '/' + month + '/' + dt.getFullYear();
-        }
-        return '';
-    };
 
     const handleDeleteDegree = async (degree: DegreeRecord) => {
         const result = await Swal.fire({
@@ -138,7 +140,7 @@ const DegreesList = () => {
             <div>
                 <div className="panel mt-6">
                     <div className="flex items-center justify-between flex-wrap gap-4">
-                        <h2 className="text-xl uppercase">Danh sách tốt nghiệp</h2>
+                        <h2 className="text-xl">Văn bằng</h2>
                         <div className="flex sm:flex-row flex-col sm:items-center sm:gap-3 gap-4 w-full sm:w-auto">
                             <div className="relative">
                                 <input type="text" placeholder="Tìm kiếm" className="form-input py-2 ltr:pr-11 rtl:pl-11 peer" value={searchInput} onChange={(e) => setSearchInput(e.target.value)} />
@@ -163,50 +165,39 @@ const DegreesList = () => {
                             rows={degrees}
                             columns={[
                                 {
-                                    key: 'studentId',
-                                    title: 'Mã sinh viên',
-                                    render: ({ student, studentId }) => <TextWithCopy text={studentId !== undefined && studentId !== null ? String(student.studentCode) : ''} />,
-                                },
-                                {
                                     key: 'fullName',
-                                    title: 'Họ và tên',
-                                    render: ({ fullName }) => <TextWithCopy text={fullName} />,
-                                },
-                                {
-                                    key: 'cccd',
-                                    title: 'CCCD',
-                                    render: ({ cccd }) => <TextWithCopy text={cccd} />,
-                                },
-                                {
-                                    key: 'dob',
-                                    title: 'Ngày sinh',
-                                    render: ({ dob }) => <div>{dob ? formatDate(dob) : '-'}</div>,
+                                    title: 'Học viên',
+                                    sortable: true,
+                                    className: 'min-w-[240px]',
+                                    render: ({ fullName, student, cccd, dob }) => (
+                                        <InfoCell
+                                            rows={[
+                                                [{ value: fullName, strong: true, copy: true }],
+                                                [
+                                                    { label: 'Mã SV', value: student?.studentCode, copy: true },
+                                                    { label: 'CCCD', value: cccd, copy: true },
+                                                    { label: 'Sinh', value: dob ? formatDate(dob) : '' },
+                                                ],
+                                            ]}
+                                        />
+                                    ),
                                 },
                                 {
                                     key: 'degreeCode',
-                                    title: 'Mã văn bằng',
-                                    render: ({ degreeCode }) => <TextWithCopy text={degreeCode} />,
+                                    title: 'Văn bằng',
+                                    sortable: true,
+                                    className: 'min-w-[200px]',
+                                    render: ({ degreeCode, major }) => (
+                                        <InfoCell
+                                            rows={[[{ value: degreeCode, strong: true, copy: true }], [{ label: 'Ngành', value: major || 'chưa ghi' }]]}
+                                        />
+                                    ),
                                 },
-                                {
-                                    key: 'major',
-                                    title: 'Ngành học',
-                                },
-                                {
-                                    key: 'rank',
-                                    title: 'Xếp loại',
-                                },
-                                {
-                                    key: 'yearOfGrad',
-                                    title: 'Năm tốt nghiệp',
-                                },
-                                {
-                                    key: 'createdAt',
-                                    title: 'Ngày tạo',
-                                    render: ({ createdAt }) => <div>{createdAt ? formatDate(createdAt) : '-'}</div>,
-                                },
+                                { key: 'rank', title: 'Xếp loại', sortable: true, render: ({ rank }) => <StatusBadge tone={rankTone(rank)}>{rank || 'chưa xếp'}</StatusBadge> },
+                                { key: 'yearOfGrad', title: 'Năm TN', sortable: true, align: 'center' },
                                 {
                                     key: 'actions',
-                                    title: 'Action',
+                                    title: 'Thao tác',
                                     align: 'center',
                                     render: (record: DegreeRecord) => (
                                         <div className="flex items-center justify-center gap-2">

@@ -1,3 +1,4 @@
+import { formatDate } from '../../utils/formatDate';
 import DataTable from '../../components/table/DataTable';
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import Tippy from '@tippyjs/react';
@@ -9,11 +10,12 @@ import IconPlus from '../../components/Icon/IconPlus';
 import IconEye from '../../components/Icon/IconEye';
 import IconTrashLines from '../../components/Icon/IconTrashLines';
 import Drawer from '../../components/Drawer';
+import StatusBadge, { type BadgeTone } from '../../components/StatusBadge';
 import IconX from '../../components/Icon/IconX';
 import IconSearch from '../../components/Icon/IconSearch';
 import { setPageTitle } from '../../store/themeConfigSlice';
 import http from '../../utils/http';
-import { notBlank, trimStrings } from '../../utils/trimStrings';
+import { notBlank, cleanPayload } from '../../utils/cleanInput';
 import Select, { InputActionMeta } from 'react-select';
 import TextWithCopy from '../../components/TextWithCopy';
 
@@ -56,10 +58,10 @@ const STATUS_OPTIONS: { value: ConsultationStatus; label: string }[] = [
     { value: 'PROCESSED', label: 'Đã xử lý' },
 ];
 
-const STATUS_STYLES: Record<ConsultationStatus, string> = {
-    PENDING: 'badge bg-warning/20 text-warning',
-    PROCESSING: 'badge bg-info/20 text-info',
-    PROCESSED: 'badge bg-success/20 text-success',
+const STATUS_TONES: Record<ConsultationStatus, BadgeTone> = {
+    PENDING: 'muted',
+    PROCESSING: 'warn',
+    PROCESSED: 'ok',
 };
 
 const ConsultationsPage = () => {
@@ -242,14 +244,6 @@ const ConsultationsPage = () => {
         fetchConsultations(page, pageSize, search);
     }, [page, pageSize, statusFilter, programFilter, search]);
 
-    const formatDate = (value?: string) => {
-        if (!value) return '-';
-        const date = new Date(value);
-        if (Number.isNaN(date.getTime())) return '-';
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        return `${day}/${month}/${date.getFullYear()}`;
-    };
 
     const openCreateModal = () => {
         resetCreateForm({
@@ -291,7 +285,7 @@ const ConsultationsPage = () => {
     };
 
     const createConsultation: SubmitHandler<ConsultationFormValues> = async (rawValues) => {
-        const values = trimStrings(rawValues);
+        const values = cleanPayload(rawValues);
         const payload: Record<string, string | number | undefined> = {
             fullName: values.fullName,
             phone: values.phone,
@@ -327,7 +321,7 @@ const ConsultationsPage = () => {
 
     const updateConsultation: SubmitHandler<ConsultationFormValues> = async (rawValues) => {
         if (!selectedConsultation) return;
-        const values = trimStrings(rawValues);
+        const values = cleanPayload(rawValues);
 
         const payload: Record<string, string | number | undefined> = {
             fullName: values.fullName,
@@ -466,7 +460,7 @@ const ConsultationsPage = () => {
                                 key: 'status',
                                 title: 'Trạng thái',
                                 render: ({ status }) => (
-                                    <span className={STATUS_STYLES[status] || 'badge bg-primary/20 text-primary'}>{STATUS_OPTIONS.find((option) => option.value === status)?.label || status}</span>
+                                    <StatusBadge tone={STATUS_TONES[status] ?? 'muted'}>{STATUS_OPTIONS.find((option) => option.value === status)?.label || status}</StatusBadge>
                                 ),
                             },
                             {
@@ -481,7 +475,7 @@ const ConsultationsPage = () => {
                                 render: (record: Consultation) => (
                                     <div className="flex items-center w-max mx-auto gap-2">
                                         <Tippy content="Chi tiết">
-                                            <button type="button" onClick={() => openDetailModal(record)} className="btn btn-sm btn-info-light !py-1.5">
+                                            <button type="button" onClick={() => openDetailModal(record)} className="btn btn-sm btn-outline-secondary !py-1.5">
                                                 <IconEye className="w-4.5 h-4.5" />
                                             </button>
                                         </Tippy>
@@ -692,17 +686,14 @@ const ConsultationsPage = () => {
                                                 </label>
                                                 <textarea id="note-update" rows={3} className="form-textarea" placeholder="Nhập ghi chú" {...registerUpdate('note')} />
                                             </div>
-                                            <div className="md:col-span-2 flex flex-wrap gap-4 items-center">
-                                                <div className="text-sm text-white-dark">
-                                                    Ngày tạo: <span className="font-semibold text-white">{formatDate(selectedConsultation?.createdAt)}</span>
+                                            {/* Ngày tháng trước đây để chữ trắng trên nền trắng nên không ai đọc được.
+                                                Nút Cập nhật cũng bỏ: drawer đã có nút Lưu dính đáy, hai nút gây rối. */}
+                                            <div className="grid gap-1 rounded-lg bg-slate-50 px-3 py-2.5 text-xs text-slate-600">
+                                                <div>
+                                                    Ngày tạo: <span className="font-semibold text-slate-800">{formatDate(selectedConsultation?.createdAt)}</span>
                                                 </div>
-                                                <div className="text-sm text-white-dark">
-                                                    Ngày cập nhật: <span className="font-semibold text-white">{formatDate(selectedConsultation?.updatedAt)}</span>
-                                                </div>
-                                                <div className="ml-auto">
-                                                    <button type="submit" className="btn btn-primary w-full md:w-auto" disabled={updating}>
-                                                        {updating ? 'Đang cập nhật...' : 'Cập nhật'}
-                                                    </button>
+                                                <div>
+                                                    Cập nhật lần cuối: <span className="font-semibold text-slate-800">{formatDate(selectedConsultation?.updatedAt)}</span>
                                                 </div>
                                             </div>
             </Drawer>

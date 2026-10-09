@@ -1,3 +1,4 @@
+import { formatDate } from '../../utils/formatDate';
 import Flatpickr from 'react-flatpickr';
 import 'flatpickr/dist/flatpickr.css';
 import DataTable from '../../components/table/DataTable';
@@ -14,7 +15,7 @@ import { useForm, SubmitHandler, Controller } from 'react-hook-form';
 import IconSearch from '../../components/Icon/IconSearch';
 import Drawer from '../../components/Drawer';
 import http from '../../utils/http';
-import { notBlank, trimStrings } from '../../utils/trimStrings';
+import { notBlank, cleanPayload } from '../../utils/cleanInput';
 import Swal from 'sweetalert2';
 import { Link, useParams } from 'react-router-dom';
 
@@ -134,19 +135,10 @@ const Attendance = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [page, pageSize, search]);
 
-    const formatDate = (date: string | number | Date) => {
-        if (date) {
-            const dt = new Date(date);
-            const month = dt.getMonth() + 1 < 10 ? '0' + (dt.getMonth() + 1) : dt.getMonth() + 1;
-            const day = dt.getDate() < 10 ? '0' + dt.getDate() : dt.getDate();
-            return day + '/' + month + '/' + dt.getFullYear();
-        }
-        return '';
-    };
 
     const onSubmit: SubmitHandler<AttendanceFormValues> = async (values) => {
         const studentId = Number(studentIdParam);
-        const payload = trimStrings({
+        const payload = cleanPayload({
             studentId,
             date: values.date,
             status: values.status,
@@ -245,7 +237,7 @@ const Attendance = () => {
             <div>
                 <div className="panel mt-6">
                     <div className="flex items-center justify-between flex-wrap gap-4">
-                        <h2 className="text-xl uppercase">Điểm danh</h2>
+                        <h2 className="text-xl">Điểm danh</h2>
                         <div className="flex sm:flex-row flex-col sm:items-center sm:gap-3 gap-4 w-full sm:w-auto">
                             <div className="flex gap-3">
                                 <button

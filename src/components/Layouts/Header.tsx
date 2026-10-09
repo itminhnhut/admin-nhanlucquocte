@@ -2,11 +2,10 @@ import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { IRootState } from '../../store';
-import { toggleTheme, toggleSidebar } from '../../store/themeConfigSlice';
+import { toggleSidebar } from '../../store/themeConfigSlice';
 import Dropdown from '../Dropdown';
 import IconMenu from '../Icon/IconMenu';
 
-import IconSun from '../Icon/IconSun';
 
 import IconLogout from '../Icon/IconLogout';
 
@@ -59,9 +58,9 @@ const Header = () => {
             <div className="shadow-sm">
                 <div className="relative bg-white flex w-full items-center px-5 py-2.5 dark:bg-black">
                     <div className="horizontal-logo flex lg:hidden justify-between items-center ltr:mr-2 rtl:ml-2">
-                        <Link to="/students" className="main-logo flex items-center shrink-0">
-                            <img className="w-8 ltr:-ml-1 rtl:-mr-1 inline" src="/assets/images/logo.svg" alt="logo" />
-                            <span className="text-2xl ltr:ml-1.5 rtl:mr-1.5  font-semibold  align-middle hidden md:inline dark:text-white-light transition-all duration-300">ADMIN</span>
+                        <Link to="/news" className="main-logo flex shrink-0 items-center gap-2">
+                            <img className="inline w-8" src="/assets/images/logo-truong.png" alt="Logo Trường Trung cấp nghề Nhân Lực Quốc Tế" />
+                            <span className="hidden text-[15px] font-bold md:inline">Nhân Lực Quốc Tế</span>
                         </Link>
                         <button
                             type="button"
@@ -76,24 +75,6 @@ const Header = () => {
 
                     <div className="sm:flex-1 ltr:sm:ml-0 ltr:ml-auto sm:rtl:mr-0 rtl:mr-auto flex items-center space-x-1.5 lg:space-x-2 rtl:space-x-reverse dark:text-[#d0d2d6]">
                         <div className="sm:ltr:mr-auto sm:rtl:ml-auto"></div>
-                        <div>
-                            {themeConfig.theme === 'light' ? (
-                                <button
-                                    className={`${
-                                        themeConfig.theme === 'light' &&
-                                        'flex items-center p-2 rounded-full bg-white-light/40 dark:bg-dark/40 hover:text-primary hover:bg-white-light/90 dark:hover:bg-dark/60'
-                                    }`}
-                                    onClick={() => {
-                                        dispatch(toggleTheme('dark'));
-                                    }}
-                                >
-                                    <IconSun />
-                                </button>
-                            ) : (
-                                ''
-                            )}
-                        </div>
-
                         <div className="dropdown shrink-0 flex">
                             <Dropdown
                                 offset={[0, 8]}

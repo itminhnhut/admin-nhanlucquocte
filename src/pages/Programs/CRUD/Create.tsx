@@ -13,7 +13,7 @@ import { setPageTitle } from '../../../store/themeConfigSlice';
 import http from '../../../utils/http';
 import { refreshSitemap } from '../../../utils/sitemap';
 import { createSlugFromTitle } from '../../../utils/slug';
-import { notBlank } from '../../../utils/trimStrings';
+import { notBlank } from '../../../utils/cleanInput';
 import { buildProgramPayload, isEmptyContent, stripBase64Images, type ProgramFormValues } from './payload';
 
 type Program = ProgramFormValues & { id: number; slug: string; content?: string };
