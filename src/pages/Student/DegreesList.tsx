@@ -1,4 +1,4 @@
-import { formatDate } from '../../utils/formatDate';
+import { formatDate, formatGradYear, isOddGradYear } from '../../utils/formatDate';
 import 'flatpickr/dist/flatpickr.css';
 import DataTable from '../../components/table/DataTable';
 import { useEffect, useState } from 'react';
@@ -194,7 +194,20 @@ const PAGE_SIZES = [10];
                                     ),
                                 },
                                 { key: 'rank', title: 'Xếp loại', sortable: true, render: ({ rank }) => <StatusBadge tone={rankTone(rank)}>{rank || 'chưa xếp'}</StatusBadge> },
-                                { key: 'yearOfGrad', title: 'Năm TN', sortable: true, align: 'center' },
+                                {
+                                    key: 'yearOfGrad',
+                                    title: 'Tốt nghiệp',
+                                    sortable: true,
+                                    align: 'center',
+                                    render: ({ yearOfGrad }) =>
+                                        isOddGradYear(yearOfGrad) ? (
+                                            <span className="whitespace-nowrap text-amber-600" title="Dữ liệu không đúng dạng năm hay ngày, cần sửa lại">
+                                                {String(yearOfGrad)} ⚠
+                                            </span>
+                                        ) : (
+                                            <span className="whitespace-nowrap">{formatGradYear(yearOfGrad)}</span>
+                                        ),
+                                },
                                 {
                                     key: 'actions',
                                     title: 'Thao tác',

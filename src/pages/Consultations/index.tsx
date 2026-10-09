@@ -11,6 +11,8 @@ import IconEye from '../../components/Icon/IconEye';
 import IconTrashLines from '../../components/Icon/IconTrashLines';
 import Drawer from '../../components/Drawer';
 import StatusBadge, { type BadgeTone } from '../../components/StatusBadge';
+import InfoCell from '../../components/table/InfoCell';
+import { splitConsultationNote } from '../../utils/consultationNote';
 import IconX from '../../components/Icon/IconX';
 import IconSearch from '../../components/Icon/IconSearch';
 import { setPageTitle } from '../../store/themeConfigSlice';
@@ -59,9 +61,9 @@ const STATUS_OPTIONS: { value: ConsultationStatus; label: string }[] = [
 ];
 
 const STATUS_TONES: Record<ConsultationStatus, BadgeTone> = {
-    PENDING: 'muted',
-    PROCESSING: 'warn',
-    PROCESSED: 'ok',
+    PENDING: 'warn',      // chờ xử lý: cần làm
+    PROCESSING: 'brand',  // đang xử lý
+    PROCESSED: 'ok',      // xong
 };
 
 const ConsultationsPage = () => {
@@ -267,7 +269,8 @@ const ConsultationsPage = () => {
             email: consultation.email || '',
             location: consultation.location || '',
             currentLevel: consultation.currentLevel || '',
-            note: consultation.note || '',
+            // Chỉ đưa phần khách viết vào ô sửa; dấu vết đồng ý giữ riêng và nối lại khi lưu
+            note: splitConsultationNote(consultation.note).note,
             status: consultation.status || 'PENDING',
             programId: consultation.programId ? String(consultation.programId) : '',
         });
@@ -322,6 +325,13 @@ const ConsultationsPage = () => {
     const updateConsultation: SubmitHandler<ConsultationFormValues> = async (rawValues) => {
         if (!selectedConsultation) return;
         const values = cleanPayload(rawValues);
+        // Giữ nguyên dấu vết đồng ý chính sách: đó là bằng chứng pháp lý, nhân viên
+        // sửa ghi chú không được làm mất
+        const original = splitConsultationNote(selectedConsultation.note);
+        if (original.hasConsent) {
+            const stamp = `[Đồng ý Chính sách bảo vệ dữ liệu cá nhân phiên bản ${original.consentVersion}, lúc ${original.consentAt}]`;
+            values.note = `${values.note ?? ''} ${stamp}`.trim();
+        }
 
         const payload: Record<string, string | number | undefined> = {
             fullName: values.fullName,
@@ -401,7 +411,7 @@ const ConsultationsPage = () => {
                     <div className="flex sm:flex-row flex-col sm:items-center sm:gap-3 gap-4 w-full sm:w-auto">
                         <button type="button" data-testid="them-don" className="btn btn-primary w-full sm:w-auto" onClick={openCreateModal}>
                             <IconPlus className="ltr:mr-2 rtl:ml-2" />
-                            Tạo form
+                            Thêm đơn
                         </button>
                         <div className="relative">
                             <input type="text" placeholder="Tìm kiếm" className="form-input py-2 ltr:pr-11 rtl:pl-11 peer" value={searchInput} onChange={(e) => setSearchInput(e.target.value)} />
@@ -441,36 +451,57 @@ const ConsultationsPage = () => {
                     <DataTable
                             rows={consultations}
                             columns={[
-                            {
-                                key: 'fullName',
-                                title: 'Họ tên',
-                                render: ({ fullName }) => <TextWithCopy text={fullName} className="text-multiline-2" />,
-                            },
-                            {
-                                key: 'phone',
-                                title: 'Điện thoại',
-                                render: ({ phone }) => <TextWithCopy text={phone} className="text-multiline-2" />,
-                            },
-                            {
-                                key: 'email',
-                                title: 'Email',
-                                render: ({ email }) => <TextWithCopy text={email} className="text-multiline-2" />,
-                            },
-                            {
-                                key: 'status',
-                                title: 'Trạng thái',
-                                render: ({ status }) => (
-                                    <StatusBadge tone={STATUS_TONES[status] ?? 'muted'}>{STATUS_OPTIONS.find((option) => option.value === status)?.label || status}</StatusBadge>
-                                ),
-                            },
-                            {
-                                key: 'createdAt',
-                                title: 'Ngày tạo',
-                                render: ({ createdAt }) => <div>{formatDate(createdAt)}</div>,
-                            },
-                            {
+                                {
+                                    key: 'fullName',
+                                    title: 'Người đăng ký',
+                                    sortable: true,
+                                    className: 'min-w-[230px]',
+                                    render: ({ fullName, phone, email }) => (
+                                        <InfoCell
+                                            rows={[
+                                                [{ value: fullName, strong: true, copy: true }],
+                                                [
+                                                    { label: 'SĐT', value: phone, copy: true },
+                                                    { label: 'Email', value: email, copy: true },
+                                                ],
+                                            ]}
+                                        />
+                                    ),
+                                },
+                                {
+                                    key: 'status',
+                                    title: 'Trạng thái',
+                                    sortable: true,
+                                    render: ({ status }) => <StatusBadge tone={STATUS_TONES[status] ?? 'muted'}>{STATUS_OPTIONS.find((option) => option.value === status)?.label || status}</StatusBadge>,
+                                },
+                                {
+                                    key: 'createdAt',
+                                    title: 'Ngày gửi',
+                                    sortable: true,
+                                    render: ({ createdAt }) => <span className="whitespace-nowrap">{formatDate(createdAt)}</span>,
+                                },
+                                {
+                                    key: 'note',
+                                    title: 'Nội dung cần tư vấn',
+                                    className: 'min-w-[240px] max-w-[380px] whitespace-normal',
+                                    render: ({ note, currentLevel, program }) => {
+                                        const { note: text, hasConsent, consentAt } = splitConsultationNote(note);
+                                        return (
+                                            <div className="space-y-1">
+                                                <p className="text-[13px] leading-relaxed text-slate-700">{text || <span className="text-slate-400">không ghi chú</span>}</p>
+                                                {(currentLevel || program?.title) && <p className="text-xs text-slate-500">{[program?.title, currentLevel].filter(Boolean).join(' · ')}</p>}
+                                                {hasConsent && (
+                                                    <p className="text-[11px] text-slate-400" title={`Đồng ý chính sách bảo vệ dữ liệu cá nhân lúc ${consentAt}`}>
+                                                        ✓ đã đồng ý chính sách
+                                                    </p>
+                                                )}
+                                            </div>
+                                        );
+                                    },
+                                },
+                                {
                                 key: 'actions',
-                                title: 'Action',
+                                title: 'Thao tác',
                                     align: 'center',
                                 render: (record: Consultation) => (
                                     <div className="flex items-center w-max mx-auto gap-2">

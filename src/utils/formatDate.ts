@@ -43,3 +43,24 @@ export function formatDateTime(value?: string | number | Date | null, fallback =
     if (Number.isNaN(date.getTime())) return formatDate(value, fallback);
     return `${formatDate(date)} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
+
+/**
+ * Trường "năm tốt nghiệp" trong dữ liệu của trường không đồng nhất: có dòng chỉ
+ * ghi năm (2026), có dòng ghi nguyên ngày dính liền (25092024), và có dòng sai
+ * hẳn (1703206 — 7 số). Hàm này hiển thị đúng từng dạng và KHÔNG tự đoán với
+ * dữ liệu sai, vì đoán sai còn tệ hơn hiện thô.
+ */
+export function formatGradYear(value?: string | number | null, fallback = '—'): string {
+    if (value === null || value === undefined || value === '') return fallback;
+    const text = String(value).trim();
+    if (/^\d{4}$/.test(text)) return text;
+    if (/^\d{8}$/.test(text)) return formatDate(text, text);
+    return text;
+}
+
+/** Giá trị năm tốt nghiệp không đúng dạng năm cũng không đúng dạng ngày */
+export function isOddGradYear(value?: string | number | null): boolean {
+    if (value === null || value === undefined || value === '') return false;
+    const text = String(value).trim();
+    return !/^\d{4}$/.test(text) && !/^\d{8}$/.test(text);
+}

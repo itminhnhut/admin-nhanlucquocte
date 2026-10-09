@@ -23,6 +23,7 @@ type DataTableProps<T extends object> = {
     loading?: boolean;
     emptyText?: string;
     initialSort?: SortState;
+    /** Số dòng mỗi trang. Dùng phần tử đầu; không cho người dùng tự đổi cho đồng bộ giữa các trang. */
     pageSizes?: readonly number[];
     /**
      * Khi API trả từng trang (không trả hết một lần): truyền tổng số dòng và tự
@@ -57,7 +58,6 @@ function DataTable<T extends object>({ rows, columns, rowKey, unit = 'dòng', lo
     const pageSize = server ? server.pageSize : localPageSize;
     const total = server ? server.total : rows.length;
     const setPage = (next: number) => (server ? server.onPageChange(next) : setLocalPage(next));
-    const setPageSize = (next: number) => (server ? server.onPageSizeChange?.(next) : setLocalPageSize(next));
 
     // Lọc xong còn ít dòng thì kéo về trang cuối, không để người dùng nhìn trang trắng
     useEffect(() => {
@@ -125,16 +125,6 @@ function DataTable<T extends object>({ rows, columns, rowKey, unit = 'dòng', lo
             <div className="mt-3 flex flex-col gap-3 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between">
                 <span data-testid="table-range">{rangeLabel(page, pageSize, total, unit)}</span>
                 <div className="flex items-center gap-3">
-                    <label className={`flex items-center gap-2 ${server && !server.onPageSizeChange ? 'hidden' : ''}`}>
-                        <span className="whitespace-nowrap">Mỗi trang</span>
-                        <select className="form-select !w-auto !py-1.5" value={pageSize} onChange={(event) => setPageSize(Number(event.target.value))}>
-                            {pageSizes.map((size) => (
-                                <option key={size} value={size}>
-                                    {size}
-                                </option>
-                            ))}
-                        </select>
-                    </label>
                     <div className="flex items-center gap-1">
                         <button type="button" className="btn btn-sm btn-outline-secondary" disabled={page <= 1} onClick={() => setPage(page - 1)}>
                             Trước

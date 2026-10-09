@@ -1,3 +1,5 @@
+import InfoCell from '../../components/table/InfoCell';
+import StatusBadge, { type BadgeTone } from '../../components/StatusBadge';
 import { formatDate } from '../../utils/formatDate';
 import 'flatpickr/dist/flatpickr.css';
 import DataTable from '../../components/table/DataTable';
@@ -23,6 +25,10 @@ type AttendanceRecord = {
         fullName: string;
     };
 };
+
+// Có mặt xanh, đi trễ vàng, vắng mặt đỏ — nhìn lướt là thấy buổi nào có vấn đề
+const ATTENDANCE_LABELS: Record<string, string> = { PRESENT: 'Có mặt', ABSENT: 'Vắng mặt', LATE: 'Đi trễ' };
+const ATTENDANCE_TONES: Record<string, BadgeTone> = { PRESENT: 'ok', ABSENT: 'brand', LATE: 'warn' };
 
 const AttendanceList = () => {
     const [attendances, setAttendances] = useState<AttendanceRecord[]>([]);
@@ -112,46 +118,40 @@ const AttendanceList = () => {
                             rows={attendances}
                             columns={[
                                 {
-                                    key: 'student.studentCode',
-                                    title: 'Mã sinh viên',
-                                    render: ({ student }) => <TextWithCopy text={student?.studentCode} />,
-                                },
-                                {
                                     key: 'student',
-                                    title: 'Họ và tên',
-                                    render: ({ student }) => <TextWithCopy text={student?.fullName} />,
+                                    title: 'Học viên',
+                                    className: 'min-w-[210px]',
+                                    render: ({ student }) => (
+                                        <InfoCell
+                                            rows={[
+                                                [{ value: student?.fullName, strong: true, copy: true }],
+                                                [{ label: 'Mã SV', value: student?.studentCode, copy: true }],
+                                            ]}
+                                        />
+                                    ),
                                 },
                                 {
                                     key: 'date',
-                                    title: 'Ngày học',
-                                    render: ({ date }) => <div>{date ? formatDate(date) : '-'}</div>,
-                                },
-                                {
-                                    key: 'subject',
-                                    title: 'Môn học',
-                                    render: ({ subject }) => <TextWithCopy text={subject} />,
+                                    title: 'Buổi học',
+                                    sortable: true,
+                                    className: 'min-w-[170px]',
+                                    render: ({ date, subject }) => (
+                                        <InfoCell rows={[[{ value: date ? formatDate(date) : '', strong: true }], [{ label: 'Môn', value: subject || 'chưa ghi' }]]} />
+                                    ),
                                 },
                                 {
                                     key: 'status',
                                     title: 'Trạng thái',
-                                    render: ({ status }) => {
-                                        let label = 'Không xác định';
-                                        if (status === 'PRESENT') label = 'Có mặt';
-                                        else if (status === 'ABSENT') label = 'Vắng mặt';
-                                        else if (status === 'LATE') label = 'Đi trễ';
-                                        return <TextWithCopy text={label} />;
-                                    },
+                                    sortable: true,
+                                    render: ({ status }) => <StatusBadge tone={ATTENDANCE_TONES[status] ?? 'muted'}>{ATTENDANCE_LABELS[status] ?? 'Không xác định'}</StatusBadge>,
                                 },
                                 {
                                     key: 'note',
                                     title: 'Ghi chú',
+                                    className: 'min-w-[160px] whitespace-normal',
+                                    render: ({ note }) => <span className="text-[13px] text-slate-700">{note?.trim() || <span className="text-slate-400">—</span>}</span>,
                                 },
-                                {
-                                    key: 'createdAt',
-                                    title: 'Ngày tạo',
-                                    render: ({ createdAt }) => <div>{createdAt ? formatDate(createdAt) : '-'}</div>,
-                                },
-                            ]}
+                                                        ]}
                             rowKey={(row) => row.id}
                             unit="buổi điểm danh"
                             loading={loading}

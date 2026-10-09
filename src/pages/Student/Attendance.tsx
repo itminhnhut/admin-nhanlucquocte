@@ -14,6 +14,7 @@ import IconX from '../../components/Icon/IconX';
 import { useForm, SubmitHandler, Controller } from 'react-hook-form';
 import IconSearch from '../../components/Icon/IconSearch';
 import Drawer from '../../components/Drawer';
+import StatusBadge, { type BadgeTone } from '../../components/StatusBadge';
 import http from '../../utils/http';
 import { notBlank, cleanPayload } from '../../utils/cleanInput';
 import Swal from 'sweetalert2';
@@ -70,7 +71,11 @@ const Attendance = () => {
     }, [studentIdParam]);
 
     const [page, setPage] = useState(1);
-    const PAGE_SIZES = [10];
+    // Có mặt xanh, đi trễ vàng, vắng mặt đỏ — nhìn lướt là biết buổi nào có vấn đề
+const ATTENDANCE_LABELS: Record<string, string> = { PRESENT: 'Có mặt', ABSENT: 'Vắng mặt', LATE: 'Đi trễ' };
+const ATTENDANCE_TONES: Record<string, BadgeTone> = { PRESENT: 'ok', ABSENT: 'brand', LATE: 'warn' };
+
+const PAGE_SIZES = [10];
     const [pageSize, setPageSize] = useState(PAGE_SIZES[0]);
     const [search, setSearch] = useState('');
 
@@ -283,13 +288,7 @@ const Attendance = () => {
                                 {
                                     key: 'status',
                                     title: 'Trạng thái',
-                                    render: ({ status }) => {
-                                        let label = 'Không xác định';
-                                        if (status === 'PRESENT') label = 'Có mặt';
-                                        else if (status === 'ABSENT') label = 'Vắng mặt';
-                                        else if (status === 'LATE') label = 'Đi trễ';
-                                        return <span>{label}</span>;
-                                    },
+                                    render: ({ status }) => <StatusBadge tone={ATTENDANCE_TONES[status] ?? 'muted'}>{ATTENDANCE_LABELS[status] ?? 'Không xác định'}</StatusBadge>,
                                 },
                                 {
                                     key: 'note',
