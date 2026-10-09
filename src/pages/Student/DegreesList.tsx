@@ -1,5 +1,5 @@
 import 'flatpickr/dist/flatpickr.css';
-import { DataTable, DataTableSortStatus } from 'mantine-datatable';
+import DataTable from '../../components/table/DataTable';
 import { useEffect, useState } from 'react';
 import Tippy from '@tippyjs/react';
 import 'tippy.js/dist/tippy.css';
@@ -160,55 +160,54 @@ const DegreesList = () => {
 
                     <div className="datatables mt-5">
                         <DataTable
-                            className="whitespace-nowrap table-hover"
-                            records={degrees}
+                            rows={degrees}
                             columns={[
                                 {
-                                    accessor: 'studentId',
+                                    key: 'studentId',
                                     title: 'Mã sinh viên',
                                     render: ({ student, studentId }) => <TextWithCopy text={studentId !== undefined && studentId !== null ? String(student.studentCode) : ''} />,
                                 },
                                 {
-                                    accessor: 'fullName',
+                                    key: 'fullName',
                                     title: 'Họ và tên',
                                     render: ({ fullName }) => <TextWithCopy text={fullName} />,
                                 },
                                 {
-                                    accessor: 'cccd',
+                                    key: 'cccd',
                                     title: 'CCCD',
                                     render: ({ cccd }) => <TextWithCopy text={cccd} />,
                                 },
                                 {
-                                    accessor: 'dob',
+                                    key: 'dob',
                                     title: 'Ngày sinh',
                                     render: ({ dob }) => <div>{dob ? formatDate(dob) : '-'}</div>,
                                 },
                                 {
-                                    accessor: 'degreeCode',
+                                    key: 'degreeCode',
                                     title: 'Mã văn bằng',
                                     render: ({ degreeCode }) => <TextWithCopy text={degreeCode} />,
                                 },
                                 {
-                                    accessor: 'major',
+                                    key: 'major',
                                     title: 'Ngành học',
                                 },
                                 {
-                                    accessor: 'rank',
+                                    key: 'rank',
                                     title: 'Xếp loại',
                                 },
                                 {
-                                    accessor: 'yearOfGrad',
+                                    key: 'yearOfGrad',
                                     title: 'Năm tốt nghiệp',
                                 },
                                 {
-                                    accessor: 'createdAt',
+                                    key: 'createdAt',
                                     title: 'Ngày tạo',
                                     render: ({ createdAt }) => <div>{createdAt ? formatDate(createdAt) : '-'}</div>,
                                 },
                                 {
-                                    accessor: 'actions',
+                                    key: 'actions',
                                     title: 'Action',
-                                    titleClassName: '!text-center',
+                                    align: 'center',
                                     render: (record: DegreeRecord) => (
                                         <div className="flex items-center justify-center gap-2">
                                             <Tippy content="Xóa">
@@ -220,15 +219,10 @@ const DegreesList = () => {
                                     ),
                                 },
                             ]}
-                            totalRecords={total}
-                            recordsPerPage={pageSize}
-                            page={page}
-                            onPageChange={setPage}
-                            recordsPerPageOptions={PAGE_SIZES}
-                            onRecordsPerPageChange={setPageSize}
-                            minHeight={200}
-                            paginationText={({ from, to, totalRecords }) => `Showing ${from} to ${to} of ${totalRecords} entries`}
-                            fetching={loading}
+                            rowKey={(row) => row.id}
+                            unit="văn bằng"
+                            loading={loading}
+                            server={{ total: total, page, pageSize, onPageChange: setPage }}
                         />
                     </div>
                 </div>

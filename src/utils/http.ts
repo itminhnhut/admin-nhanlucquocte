@@ -1,5 +1,6 @@
 import axios, { type AxiosRequestConfig } from 'axios';
 import Cookies from 'js-cookie';
+import { AUTH_TOKEN_KEY, clearSession } from './auth';
 import { API_URL } from '../configs/env';
 
 export interface ApiResponse<T> {
@@ -15,7 +16,7 @@ const axiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use(
     (config) => {
-        const token = Cookies.get('auth_token');
+        const token = Cookies.get(AUTH_TOKEN_KEY);
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
@@ -30,8 +31,7 @@ axiosInstance.interceptors.response.use(
     }) as any,
     (error) => {
         if (error.response?.status === 401) {
-            Cookies.remove('auth_token');
-            Cookies.remove('admin_info');
+            clearSession();
 
             window.location.href = '/auth/cover-login';
         }

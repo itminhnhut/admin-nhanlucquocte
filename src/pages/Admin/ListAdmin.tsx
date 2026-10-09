@@ -1,80 +1,89 @@
-import { DataTable } from 'mantine-datatable';
-import { useEffect, useState } from 'react';
-import { setPageTitle } from '../../store/themeConfigSlice';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
+import Swal from 'sweetalert2';
+import SearchInput from '../../components/SearchInput';
+import DataTable, { type Column } from '../../components/table/DataTable';
+import { setPageTitle } from '../../store/themeConfigSlice';
+import { Admin, AdminListResponse } from '../../types/admin';
 import http from '../../utils/http';
-import { AdminListResponse } from '../../types/admin';
 
-const PAGE_SIZES = [10];
-const ListAdmin = () => {
+const ROLE_LABEL: Record<string, string> = { EDITOR: 'Biên tập', SUPER_ADMIN: 'Quản trị' };
+
+/** Chữ cái đầu của tên, thay cho ảnh đại diện (template cũ lấy ảnh mẫu theo id, luôn 404) */
+function initialsOf(fullName: string, username: string) {
+    const words = (fullName || username || '').trim().split(/\s+/).filter(Boolean);
+    if (words.length === 0) return '?';
+    return (words.length === 1 ? words[0].slice(0, 2) : words[words.length - 2][0] + words[words.length - 1][0]).toUpperCase();
+}
+
+function formatDate(date: string) {
+    if (!date) return '-';
+    const value = new Date(date);
+    return `${String(value.getDate()).padStart(2, '0')}/${String(value.getMonth() + 1).padStart(2, '0')}/${value.getFullYear()}`;
+}
+
+function ListAdmin() {
     const dispatch = useDispatch();
-    useEffect(() => {
-        dispatch(setPageTitle('Multi Column Table'));
-    });
-    const [page, setPage] = useState(1);
-    const [pageSize, setPageSize] = useState(PAGE_SIZES[0]);
-    const [recordsData, setRecordsData] = useState([] as any[]);
+    const [admins, setAdmins] = useState<Admin[]>([]);
     const [loading, setLoading] = useState(false);
+    const [search, setSearch] = useState('');
+    const handleSearch = useCallback((keyword: string) => setSearch(keyword), []);
 
     useEffect(() => {
-        fetchData();
+        dispatch(setPageTitle('Tài khoản quản trị'));
+    }, [dispatch]);
+
+    useEffect(() => {
+        const load = async () => {
+            setLoading(true);
+            try {
+                const response = await http.get<AdminListResponse>('admin/admins');
+                setAdmins(response.data ?? []);
+            } catch (error) {
+                console.error('Lỗi tải danh sách tài khoản:', error);
+                Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Không tải được danh sách tài khoản quản trị.' });
+                setAdmins([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+        load();
     }, []);
 
-    const fetchData = async () => {
-        try {
-            setLoading(true);
-            const rs = await http.get<AdminListResponse>('admin/admins');
-            console.log(rs);
-            setRecordsData((rs.data as any) ?? []);
-        } catch (error) {
-            setRecordsData([]);
-        } finally {
-            setLoading(false);
-        }
-    };
+    const filtered = useMemo(() => {
+        if (!search) return admins;
+        const keyword = search.toLowerCase();
+        return admins.filter((item) => item.fullName?.toLowerCase().includes(keyword) || item.username?.toLowerCase().includes(keyword));
+    }, [admins, search]);
+
+    const columns: Column<Admin>[] = [
+        {
+            key: 'fullName',
+            title: 'Họ tên',
+            sortable: true,
+            render: ({ fullName, username }) => (
+                <div className="flex w-max items-center gap-2">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-xs font-bold text-white">{initialsOf(fullName, username)}</span>
+                    <span>{fullName || '—'}</span>
+                </div>
+            ),
+        },
+        { key: 'username', title: 'Tên đăng nhập', sortable: true },
+        { key: 'role', title: 'Quyền', sortable: true, render: ({ role }) => <span className="badge bg-primary-light text-primary">{ROLE_LABEL[role] || role}</span> },
+        { key: 'createdAt', title: 'Ngày tạo', sortable: true, render: ({ createdAt }) => <>{formatDate(createdAt)}</> },
+    ];
 
     return (
-        <div>
+        <section>
             <div className="panel mt-6">
-                <div className="flex md:items-center md:flex-row flex-col mb-5 gap-5">
-                    <h5 className="font-semibold text-lg dark:text-white-light">Danh sách Admin</h5>
+                <div className="mb-5 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                    <h2 className="text-xl">Tài khoản quản trị</h2>
+                    <SearchInput onSearch={handleSearch} placeholder="Tìm theo tên hoặc tài khoản" />
                 </div>
-                <div className="datatables">
-                    <DataTable
-                        highlightOnHover
-                        className="whitespace-nowrap table-hover"
-                        fetching={loading}
-                        records={recordsData}
-                        columns={[
-                            { accessor: 'id', title: 'Id' },
-                            {
-                                accessor: 'fullName',
-                                title: 'Full Name',
-                                sortable: true,
-                                render: ({ fullName, id }) => (
-                                    <div className="flex items-center w-max">
-                                        <img className="w-9 h-9 rounded-full ltr:mr-2 rtl:ml-2 object-cover" src={`/assets/images/profile-${id}.jpeg`} alt="" />
-                                        <div>{fullName}</div>
-                                    </div>
-                                ),
-                            },
-                            { accessor: 'username', title: 'User name' },
-                            { accessor: 'role', title: 'Role' },
-                            { accessor: 'createdAt', title: 'Created At' },
-                        ]}
-                        totalRecords={recordsData?.length}
-                        recordsPerPage={pageSize}
-                        page={page}
-                        onPageChange={(p) => setPage(p)}
-                        recordsPerPageOptions={PAGE_SIZES}
-                        onRecordsPerPageChange={setPageSize}
-                        minHeight={200}
-                        paginationText={({ from, to, totalRecords }) => `Showing  ${from} to ${to} of ${totalRecords} entries`}
-                    />
-                </div>
+                <DataTable rows={filtered} columns={columns} rowKey={(row) => row.id} unit="tài khoản" loading={loading} initialSort={{ key: 'fullName', direction: 'asc' }} pageSizes={[10, 25, 50]} />
             </div>
-        </div>
+        </section>
     );
-};
+}
 
 export default ListAdmin;

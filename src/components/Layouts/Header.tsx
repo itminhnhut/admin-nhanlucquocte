@@ -10,14 +10,8 @@ import IconSun from '../Icon/IconSun';
 
 import IconLogout from '../Icon/IconLogout';
 
-import Cookies from 'js-cookie';
+import { clearSession, readAdminInfo, type AdminInfo } from '../../utils/auth';
 import http from '../../utils/http';
-
-type AdminInfo = {
-    fullName?: string;
-    username?: string;
-    role?: 'EDITOR' | 'SUPER_ADMIN';
-};
 
 const ROLE_LABEL: Record<string, string> = { EDITOR: 'Biên tập', SUPER_ADMIN: 'Quản trị' };
 
@@ -58,16 +52,7 @@ const Header = () => {
     const themeConfig = useSelector((state: IRootState) => state.themeConfig);
     const dispatch = useDispatch();
 
-    const adminInfoCookie = Cookies.get('admin_info');
-    let adminInfo: AdminInfo | null = null;
-
-    if (adminInfoCookie) {
-        try {
-            adminInfo = JSON.parse(adminInfoCookie) as AdminInfo;
-        } catch {
-            adminInfo = null;
-        }
-    }
+    const adminInfo = readAdminInfo();
 
     return (
         <header className={`z-40 ${themeConfig.semidark && themeConfig.menu === 'horizontal' ? 'dark' : ''}`}>
@@ -141,8 +126,7 @@ const Header = () => {
                                             type="button"
                                             className="flex w-full items-center text-danger px-4 !py-3"
                                             onClick={() => {
-                                                Cookies.remove('auth_token', { path: '/' });
-                                                Cookies.remove('admin_info', { path: '/' });
+                                                clearSession();
                                                 navigate('/auth/cover-login', { replace: true });
                                             }}
                                         >

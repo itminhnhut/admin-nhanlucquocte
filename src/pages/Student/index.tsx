@@ -2,7 +2,7 @@ import Flatpickr from 'react-flatpickr';
 import 'flatpickr/dist/flatpickr.css';
 import Select from 'react-select';
 import CreatableSelect from 'react-select/creatable';
-import { DataTable, DataTableSortStatus } from 'mantine-datatable';
+import DataTable from '../../components/table/DataTable';
 import { Fragment, useEffect, useMemo, useState, FormEvent } from 'react';
 import Tippy from '@tippyjs/react';
 import 'tippy.js/dist/tippy.css';
@@ -339,50 +339,49 @@ const StudentsTables = () => {
 
                     <div className="datatables mt-5">
                         <DataTable
-                            className="whitespace-nowrap table-hover"
-                            records={students}
+                            rows={students}
                             columns={[
                                 {
-                                    accessor: 'studentCode',
+                                    key: 'studentCode',
                                     title: 'Mã SV',
                                     render: ({ studentCode }) => <TextWithCopy text={studentCode} />,
                                 },
                                 {
-                                    accessor: 'fullName',
+                                    key: 'fullName',
                                     title: 'Họ và tên',
                                     render: ({ fullName }) => <TextWithCopy text={fullName} />,
                                 },
                                 {
-                                    accessor: 'cccd',
+                                    key: 'cccd',
                                     title: 'CCCD',
                                     render: ({ cccd }) => <TextWithCopy text={cccd} />,
                                 },
                                 {
-                                    accessor: 'class',
+                                    key: 'class',
                                     title: 'Lớp',
                                 },
                                 // {
-                                //     accessor: 'email',
+                                //     key: 'email',
                                 //     title: 'Email',
                                 // },
                                 {
-                                    accessor: 'dob',
+                                    key: 'dob',
                                     title: 'Ngày sinh',
                                     render: ({ dob }) => <div>{dob ? formatDate(dob) : '-'}</div>,
                                 },
                                 // {
-                                //     accessor: 'phone',
+                                //     key: 'phone',
                                 //     title: 'Số điện thoại',
                                 // },
                                 {
-                                    accessor: 'createdAt',
+                                    key: 'createdAt',
                                     title: 'Ngày tạo',
                                     render: ({ createdAt }) => <div>{createdAt ? formatDate(createdAt) : '-'}</div>,
                                 },
                                 {
-                                    accessor: 'action',
+                                    key: 'action',
                                     title: 'Action',
-                                    titleClassName: '!text-center',
+                                    align: 'center',
                                     render: (student: Student) => (
                                         <div className="flex items-start w-max gap-2">
                                             <Tippy content="Điểm danh">
@@ -526,15 +525,10 @@ const StudentsTables = () => {
                                     ),
                                 },
                             ]}
-                            totalRecords={total}
-                            recordsPerPage={pageSize}
-                            page={page}
-                            onPageChange={setPage}
-                            recordsPerPageOptions={PAGE_SIZES}
-                            onRecordsPerPageChange={setPageSize}
-                            minHeight={200}
-                            paginationText={({ from, to, totalRecords }) => `Showing ${from} to ${to} of ${totalRecords} entries`}
-                            fetching={loading}
+                            rowKey={(row) => row.id}
+                            unit="học viên"
+                            loading={loading}
+                            server={{ total: total, page, pageSize, onPageChange: setPage }}
                         />
                     </div>
                 </div>

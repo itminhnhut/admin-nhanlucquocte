@@ -2,10 +2,11 @@ import { createBrowserRouter, Navigate, useLocation } from 'react-router-dom';
 import DefaultLayout from '../components/Layouts/DefaultLayout';
 import { routes } from './routes';
 import Cookies from 'js-cookie';
+import { AUTH_TOKEN_KEY } from '../utils/auth';
 
 const AuthRoute = ({ children }: { children: JSX.Element }) => {
     const location = useLocation();
-    const isAuthenticated = !!Cookies.get('auth_token');
+    const isAuthenticated = !!Cookies.get(AUTH_TOKEN_KEY);
 
     if (!isAuthenticated) {
         return <Navigate to="/auth/cover-login" replace state={{ from: location }} />;

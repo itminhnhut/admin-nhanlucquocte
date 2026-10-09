@@ -1,5 +1,5 @@
 import 'flatpickr/dist/flatpickr.css';
-import { DataTable, DataTableSortStatus } from 'mantine-datatable';
+import DataTable from '../../components/table/DataTable';
 import { useEffect, useState } from 'react';
 
 import IconSearch from '../../components/Icon/IconSearch';
@@ -117,31 +117,30 @@ const AttendanceList = () => {
 
                     <div className="datatables mt-5">
                         <DataTable
-                            className="whitespace-nowrap table-hover"
-                            records={attendances}
+                            rows={attendances}
                             columns={[
                                 {
-                                    accessor: 'student.studentCode',
+                                    key: 'student.studentCode',
                                     title: 'Mã sinh viên',
                                     render: ({ student }) => <TextWithCopy text={student?.studentCode} />,
                                 },
                                 {
-                                    accessor: 'student',
+                                    key: 'student',
                                     title: 'Họ và tên',
                                     render: ({ student }) => <TextWithCopy text={student?.fullName} />,
                                 },
                                 {
-                                    accessor: 'date',
+                                    key: 'date',
                                     title: 'Ngày học',
                                     render: ({ date }) => <div>{date ? formatDate(date) : '-'}</div>,
                                 },
                                 {
-                                    accessor: 'subject',
+                                    key: 'subject',
                                     title: 'Môn học',
                                     render: ({ subject }) => <TextWithCopy text={subject} />,
                                 },
                                 {
-                                    accessor: 'status',
+                                    key: 'status',
                                     title: 'Trạng thái',
                                     render: ({ status }) => {
                                         let label = 'Không xác định';
@@ -152,24 +151,19 @@ const AttendanceList = () => {
                                     },
                                 },
                                 {
-                                    accessor: 'note',
+                                    key: 'note',
                                     title: 'Ghi chú',
                                 },
                                 {
-                                    accessor: 'createdAt',
+                                    key: 'createdAt',
                                     title: 'Ngày tạo',
                                     render: ({ createdAt }) => <div>{createdAt ? formatDate(createdAt) : '-'}</div>,
                                 },
                             ]}
-                            totalRecords={total}
-                            recordsPerPage={pageSize}
-                            page={page}
-                            onPageChange={setPage}
-                            recordsPerPageOptions={PAGE_SIZES}
-                            onRecordsPerPageChange={setPageSize}
-                            minHeight={200}
-                            paginationText={({ from, to, totalRecords }) => `Showing ${from} to ${to} of ${totalRecords} entries`}
-                            fetching={loading}
+                            rowKey={(row) => row.id}
+                            unit="buổi điểm danh"
+                            loading={loading}
+                            server={{ total: total, page, pageSize, onPageChange: setPage }}
                         />
                     </div>
                 </div>

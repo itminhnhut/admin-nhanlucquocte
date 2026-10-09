@@ -1,6 +1,6 @@
 import Flatpickr from 'react-flatpickr';
 import 'flatpickr/dist/flatpickr.css';
-import { DataTable, DataTableSortStatus } from 'mantine-datatable';
+import DataTable from '../../components/table/DataTable';
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import Tippy from '@tippyjs/react';
 import 'tippy.js/dist/tippy.css';
@@ -277,20 +277,19 @@ const Attendance = () => {
 
                     <div className="datatables mt-5">
                         <DataTable
-                            className="whitespace-nowrap table-hover"
-                            records={attendances}
+                            rows={attendances}
                             columns={[
                                 {
-                                    accessor: 'date',
+                                    key: 'date',
                                     title: 'Ngày học',
                                     render: ({ date }) => <div>{date ? formatDate(date) : '-'}</div>,
                                 },
                                 {
-                                    accessor: 'subject',
+                                    key: 'subject',
                                     title: 'Môn học',
                                 },
                                 {
-                                    accessor: 'status',
+                                    key: 'status',
                                     title: 'Trạng thái',
                                     render: ({ status }) => {
                                         let label = 'Không xác định';
@@ -301,18 +300,18 @@ const Attendance = () => {
                                     },
                                 },
                                 {
-                                    accessor: 'note',
+                                    key: 'note',
                                     title: 'Ghi chú',
                                 },
                                 {
-                                    accessor: 'createdAt',
+                                    key: 'createdAt',
                                     title: 'Ngày tạo',
                                     render: ({ createdAt }) => <div>{createdAt ? formatDate(createdAt) : '-'}</div>,
                                 },
                                 {
-                                    accessor: 'action',
+                                    key: 'action',
                                     title: 'Action',
-                                    titleClassName: '!text-center',
+                                    align: 'center',
                                     render: (attendance: AttendanceRecord) => (
                                         <div className="flex items-center w-max mx-auto gap-2">
                                             <Tippy content="Edit">
@@ -377,15 +376,10 @@ const Attendance = () => {
                                     ),
                                 },
                             ]}
-                            totalRecords={total}
-                            recordsPerPage={pageSize}
-                            page={page}
-                            onPageChange={setPage}
-                            recordsPerPageOptions={PAGE_SIZES}
-                            onRecordsPerPageChange={setPageSize}
-                            minHeight={200}
-                            paginationText={({ from, to, totalRecords }) => `Showing ${from} to ${to} of ${totalRecords} entries`}
-                            fetching={loading}
+                            rowKey={(row) => row.id}
+                            unit="buổi điểm danh"
+                            loading={loading}
+                            server={{ total: total, page, pageSize, onPageChange: setPage }}
                         />
                     </div>
                 </div>

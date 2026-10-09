@@ -1,5 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
-import { DataTable } from 'mantine-datatable';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Tippy from '@tippyjs/react';
 import 'tippy.js/dist/tippy.css';
 import { useDispatch } from 'react-redux';
@@ -7,13 +6,13 @@ import { setPageTitle } from '../../store/themeConfigSlice';
 import IconPencil from '../../components/Icon/IconPencil';
 import IconTrashLines from '../../components/Icon/IconTrashLines';
 import IconPlus from '../../components/Icon/IconPlus';
-import IconSearch from '../../components/Icon/IconSearch';
-import IconX from '../../components/Icon/IconX';
 import http, { createCancelableRequest } from '../../utils/http';
 import { refreshSitemap } from '../../utils/sitemap';
 import { SITEMAP_REFRESH_URL } from '../../configs/env';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
+import SearchInput from '../../components/SearchInput';
+import DataTable, { type Column } from '../../components/table/DataTable';
 import TextWithCopy from '../../components/TextWithCopy';
 
 type NewsItem = {
@@ -39,7 +38,6 @@ const NewsTables = () => {
     const PAGE_SIZES = [10, 25, 50, 100];
     const [pageSize] = useState(PAGE_SIZES[0]);
     const [search, setSearch] = useState('');
-    const [searchInput, setSearchInput] = useState('');
 
     const cancelableRef = useRef<ReturnType<typeof createCancelableRequest> | null>(null);
 
@@ -86,16 +84,6 @@ const NewsTables = () => {
     }, [dispatch]);
 
     useEffect(() => {
-        const handler = setTimeout(() => {
-            setSearch(searchInput.trim());
-        }, 400);
-
-        return () => {
-            clearTimeout(handler);
-        };
-    }, [searchInput]);
-
-    useEffect(() => {
         // mỗi khi page hoặc search đổi thì gọi API 1 lần
         fetchNews(page, search);
 
@@ -121,6 +109,58 @@ const NewsTables = () => {
         return `${d}/${m}/${y}`;
     };
 
+    const handleSearch = useCallback((keyword: string) => setSearch(keyword), []);
+
+    const removePost = async (item: NewsItem) => {
+        const result = await Swal.fire({
+            title: 'Xoá bài viết này?',
+            text: `"${item.title}" sẽ bị xoá khỏi website. Không thể hoàn tác.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Xoá',
+            cancelButtonText: 'Hủy',
+            confirmButtonColor: '#e7515a',
+            reverseButtons: true,
+        });
+        if (!result.isConfirmed) return;
+        try {
+            await http.delete(`admin/posts/${item.id}`);
+            refreshSitemap(SITEMAP_REFRESH_URL);
+            Swal.fire({ icon: 'success', title: 'Đã xoá', timer: 1500, showConfirmButton: false });
+            fetchNews();
+        } catch (error) {
+            console.error('Lỗi xoá bài viết:', error);
+            Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Không thể xoá. Vui lòng thử lại.' });
+        }
+    };
+
+    const columns: Column<NewsItem>[] = [
+        { key: 'title', title: 'Tiêu đề', render: ({ title }) => <TextWithCopy text={title} className="text-multiline-2" /> },
+        { key: 'summary', title: 'Tóm tắt', render: ({ summary }) => <TextWithCopy text={summary ?? ''} className="text-multiline-2" /> },
+        { key: 'isHot', title: 'Nổi bật', render: ({ isHot }) => <span className={isHot ? 'font-semibold text-primary' : 'text-slate-400'}>{isHot ? 'Nổi bật' : 'Thường'}</span> },
+        { key: 'published', title: 'Trạng thái', render: ({ published }) => <span className={published ? 'badge bg-success' : 'badge bg-warning'}>{published ? 'Đã xuất bản' : 'Nháp'}</span> },
+        { key: 'createdAt', title: 'Ngày tạo', render: ({ createdAt }) => <>{formatDate(createdAt)}</> },
+        {
+            key: 'action',
+            title: 'Thao tác',
+            align: 'center',
+            render: (item) => (
+                <div className="mx-auto flex w-max items-center gap-2">
+                    <Tippy content="Sửa">
+                        <button type="button" onClick={() => navigate(`/news/${item.id}/edit`)}>
+                            <IconPencil />
+                        </button>
+                    </Tippy>
+                    <Tippy content="Xoá">
+                        <button type="button" onClick={() => removePost(item)}>
+                            <IconTrashLines />
+                        </button>
+                    </Tippy>
+                </div>
+            ),
+        },
+    ];
+
     return (
         <section>
             <div className="panel mt-6">
@@ -132,118 +172,18 @@ const NewsTables = () => {
                             Thêm mới
                         </button>
 
-                        <div className="relative">
-                            <input type="text" placeholder="Tìm kiếm" className="form-input py-2 ltr:pr-11 rtl:pl-11 peer" value={searchInput} onChange={(e) => setSearchInput(e.target.value)} />
-                            <button
-                                type="button"
-                                className="absolute ltr:right-[11px] rtl:left-[11px] top-1/2 -translate-y-1/2 peer-focus:text-primary"
-                                onClick={() => {
-                                    if (searchInput) {
-                                        setSearchInput('');
-                                        setSearch('');
-                                    }
-                                }}
-                            >
-                                {searchInput ? <IconX className="mx-auto" /> : <IconSearch className="mx-auto" />}
-                            </button>
-                        </div>
+                        <SearchInput onSearch={handleSearch} placeholder="Tìm theo tiêu đề" />
                     </div>
                 </div>
 
-                <div className="datatables mt-5">
-                    {/* @ts-ignore */}
+                <div className="mt-5">
                     <DataTable
-                        highlightOnHover
-                        className="whitespace-nowrap table-hover"
-                        records={records}
-                        columns={[
-                            {
-                                accessor: 'title',
-                                title: 'Tiêu đề',
-                                render: ({ title }) => <TextWithCopy text={title} className="text-multiline-2" />,
-                            },
-                            {
-                                accessor: 'summary',
-                                title: 'Tóm tắt',
-                                render: ({ summary }) => <TextWithCopy text={summary} className="text-multiline-2" />,
-                            },
-                            {
-                                accessor: 'isHot',
-                                title: 'Nổi bật',
-                                render: ({ isHot }) => <span className={isHot ? 'text-red-500 font-semibold' : ''}>{isHot ? 'HOT' : 'Thường'}</span>,
-                            },
-                            {
-                                accessor: 'published',
-                                title: 'Trạng thái',
-                                render: ({ published }) => <span className={published ? 'text-green-600' : 'text-gray-400'}>{published ? 'Đã xuất bản' : 'Nháp'}</span>,
-                            },
-                            {
-                                accessor: 'createdAt',
-                                title: 'Ngày tạo',
-                                render: ({ createdAt }) => formatDate(createdAt),
-                            },
-                            {
-                                accessor: 'action',
-                                title: 'Action',
-                                titleClassName: '!text-center',
-                                render: (item: NewsItem) => (
-                                    <div className="flex items-center w-max mx-auto gap-2">
-                                        <Tippy content="Edit">
-                                            <button type="button" onClick={() => navigate(`/news/${item.id}/edit`)}>
-                                                <IconPencil />
-                                            </button>
-                                        </Tippy>
-
-                                        <Tippy content="Delete">
-                                            <button
-                                                type="button"
-                                                onClick={async () => {
-                                                    const result = await Swal.fire({
-                                                        title: 'Bạn có chắc muốn xóa?',
-                                                        text: 'Hành động này không thể hoàn tác!',
-                                                        icon: 'warning',
-                                                        showCancelButton: true,
-                                                        confirmButtonColor: '#3085d6',
-                                                        cancelButtonColor: '#d33',
-                                                        confirmButtonText: 'Xóa',
-                                                        cancelButtonText: 'Hủy',
-                                                    });
-
-                                                    if (result.isConfirmed) {
-                                                        try {
-                                                            await http.delete(`admin/posts/${item.id}`);
-                                                            refreshSitemap(SITEMAP_REFRESH_URL);
-                                                            Swal.fire({
-                                                                icon: 'success',
-                                                                title: 'Đã xóa!',
-                                                                timer: 1500,
-                                                                showConfirmButton: false,
-                                                            });
-                                                            fetchNews();
-                                                        } catch (error) {
-                                                            Swal.fire({
-                                                                icon: 'error',
-                                                                title: 'Lỗi',
-                                                                text: 'Không thể xóa. Vui lòng thử lại.',
-                                                            });
-                                                        }
-                                                    }
-                                                }}
-                                            >
-                                                <IconTrashLines />
-                                            </button>
-                                        </Tippy>
-                                    </div>
-                                ),
-                            },
-                        ]}
-                        totalRecords={total}
-                        recordsPerPage={pageSize}
-                        page={page}
-                        onPageChange={setPage}
-                        recordsPerPageOptions={PAGE_SIZES}
-                        fetching={loading}
-                        paginationText={({ from, to, totalRecords }) => `Showing ${from} to ${to} of ${totalRecords} entries`}
+                        rows={records}
+                        columns={columns}
+                        rowKey={(row) => row.id}
+                        unit="bài viết"
+                        loading={loading}
+                        server={{ total, page, pageSize, onPageChange: setPage }}
                     />
                 </div>
             </div>

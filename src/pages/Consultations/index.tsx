@@ -1,4 +1,4 @@
-import { DataTable } from 'mantine-datatable';
+import DataTable from '../../components/table/DataTable';
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import Tippy from '@tippyjs/react';
 import 'tippy.js/dist/tippy.css';
@@ -445,40 +445,39 @@ const ConsultationsPage = () => {
 
                 <div className="datatables mt-5">
                     <DataTable
-                        className="whitespace-nowrap table-hover"
-                        records={consultations}
-                        columns={[
+                            rows={consultations}
+                            columns={[
                             {
-                                accessor: 'fullName',
+                                key: 'fullName',
                                 title: 'Họ tên',
                                 render: ({ fullName }) => <TextWithCopy text={fullName} className="text-multiline-2" />,
                             },
                             {
-                                accessor: 'phone',
+                                key: 'phone',
                                 title: 'Điện thoại',
                                 render: ({ phone }) => <TextWithCopy text={phone} className="text-multiline-2" />,
                             },
                             {
-                                accessor: 'email',
+                                key: 'email',
                                 title: 'Email',
                                 render: ({ email }) => <TextWithCopy text={email} className="text-multiline-2" />,
                             },
                             {
-                                accessor: 'status',
+                                key: 'status',
                                 title: 'Trạng thái',
                                 render: ({ status }) => (
                                     <span className={STATUS_STYLES[status] || 'badge bg-primary/20 text-primary'}>{STATUS_OPTIONS.find((option) => option.value === status)?.label || status}</span>
                                 ),
                             },
                             {
-                                accessor: 'createdAt',
+                                key: 'createdAt',
                                 title: 'Ngày tạo',
                                 render: ({ createdAt }) => <div>{formatDate(createdAt)}</div>,
                             },
                             {
-                                accessor: 'actions',
+                                key: 'actions',
                                 title: 'Action',
-                                titleClassName: '!text-center',
+                                    align: 'center',
                                 render: (record: Consultation) => (
                                     <div className="flex items-center w-max mx-auto gap-2">
                                         <Tippy content="Chi tiết">
@@ -495,16 +494,11 @@ const ConsultationsPage = () => {
                                 ),
                             },
                         ]}
-                        totalRecords={total}
-                        recordsPerPage={pageSize}
-                        page={page}
-                        onPageChange={setPage}
-                        recordsPerPageOptions={PAGE_SIZES}
-                        onRecordsPerPageChange={setPageSize}
-                        minHeight={250}
-                        fetching={loading}
-                        paginationText={({ from, to, totalRecords }) => `Showing ${from} to ${to} of ${totalRecords} entries`}
-                    />
+                            rowKey={(row) => row.id}
+                            unit="đơn tư vấn"
+                            loading={loading}
+                            server={{ total: total, page, pageSize, onPageChange: setPage }}
+                        />
                 </div>
             </div>
 

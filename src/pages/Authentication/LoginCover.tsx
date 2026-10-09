@@ -7,7 +7,7 @@ import { setPageTitle } from '../../store/themeConfigSlice';
 import IconLockDots from '../../components/Icon/IconLockDots';
 import IconUser from '../../components/Icon/IconUser';
 
-import Cookies from 'js-cookie';
+import { loginErrorMessage, saveSession } from '../../utils/auth';
 import http from '../../utils/http';
 import { LoginFormValues, LoginResponse } from '../../types/login';
 
@@ -38,14 +38,13 @@ const LoginCover = () => {
                 username: values.userName.trim(),
                 password: values.password,
             });
-            Cookies.set('auth_token', rs?.accessToken);
-
-            Cookies.set('admin_info', JSON.stringify(rs?.admin));
-
-            navigate('/students', { replace: true });
+            if (!rs?.accessToken) throw new Error('API không trả về token');
+            saveSession(rs.accessToken, rs.admin, window.location.protocol === 'https:');
+            navigate('/news', { replace: true });
         } catch (error) {
-            setLoginError('Sai tên đăng nhập hoặc mật khẩu');
-            return;
+            // Báo đúng nguyên nhân: sai mật khẩu khác hẳn mất mạng hay máy chủ lỗi
+            console.error('Đăng nhập thất bại:', error);
+            setLoginError(loginErrorMessage(error));
         }
     };
 
