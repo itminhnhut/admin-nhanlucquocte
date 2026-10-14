@@ -33,10 +33,13 @@ type NewsFormValues = {
     programIds: number[];
 };
 
+// Hai select trên trang dùng kiểu value khác nhau: danh mục là chuỗi, chương trình là số.
+// Khai một kiểu chung cho bộ style để không phải ép kiểu ở chỗ gọi.
+type SelectOption = { value: string | number; label: string };
 type ProgramOption = { value: number; label: string };
 
 // Dùng chung cho mọi ô chọn, trước đây đoạn style này bị chép lại ở từng ô
-const selectStyles: StylesConfig<ProgramOption, boolean> = {
+const selectStyles: StylesConfig<SelectOption, boolean> = {
     control: (base, state) => ({
         ...base,
         minHeight: 42,
@@ -346,19 +349,24 @@ const NewsForm = () => {
         // dấu cách → nội dung bài là HTML nên khối mã nguồn (<pre>) mất hết thụt đầu dòng.
         // Chỉ làm sạch các ô chữ ngắn; content và image ghép vào sau.
         const image = (values.image || '').trim();
+        const category = (values.category || '').trim();
         const payload = {
             ...cleanPayload({
                 title,
                 slug,
                 summary: values.summary,
-                category: values.category,
             }),
+            // Bỏ hẳn category khi chưa chọn, để API dùng mặc định "general"; gửi "" là lưu
+            // chuỗi rỗng và bài không thuộc danh mục nào
+            ...(category ? { category } : {}),
             content: cleanedContent,
             programIds: values.programIds,
             isHot: values.isHot,
             published: values.published ?? true,
-            // API khai image là uri và từ chối cả "" lẫn null → không có ảnh thì bỏ hẳn trường
-            ...(image ? { image } : {}),
+            // API nhận cả null và "" cho "không có ảnh" (đã thử PUT vào id không tồn tại: qua
+            // lớp kiểm). Lúc SỬA phải gửi null khi người dùng bấm "Xoá ảnh" — PUT là cập nhật
+            // một phần, bỏ hẳn trường thì API GIỮ ảnh cũ mà giao diện vẫn báo thành công.
+            ...(isEditMode ? { image: image || null } : image ? { image } : {}),
         };
 
         try {
@@ -468,17 +476,17 @@ const NewsForm = () => {
                             <label className="mb-1.5 mt-3 block text-sm font-medium text-slate-700">Danh mục chính</label>
                             <Select
                                 classNamePrefix="react-select"
-                                options={programOptions}
+                                options={POST_CATEGORIES}
                                 placeholder="Chọn một danh mục"
                                 isClearable
                                 isSearchable
                                 noOptionsMessage={() => 'Không tìm thấy danh mục'}
                                 menuPortalTarget={document.body}
                                 styles={selectStyles}
-                                value={programOptions.find((opt) => opt.label === categoryValue) || null}
+                                value={POST_CATEGORIES.find((opt) => opt.value === categoryValue) || null}
                                 onChange={(option) => {
-                                    const opt = option as ProgramOption | null;
-                                    setValue('category', opt ? opt.label : '', { shouldDirty: true });
+                                    const opt = option as { value: string; label: string } | null;
+                                    setValue('category', opt ? opt.value : '', { shouldDirty: true });
                                 }}
                             />
 
@@ -496,7 +504,7 @@ const NewsForm = () => {
                                 noOptionsMessage={() => 'Không còn chương trình phù hợp'}
                                 menuPortalTarget={document.body}
                                 styles={selectStyles}
-                                value={programOptions.filter((opt) => (programIdsValue || []).includes(opt.value))}
+                                value={programOptions.filter((opt) => (programIdsValue || []).includes(Number(opt.value)))}
                                 onChange={(options) => {
                                     const selected = (options as ProgramOption[] | null) || [];
                                     setValue(

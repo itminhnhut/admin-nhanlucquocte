@@ -69,3 +69,17 @@ test('should check the token expiry in the route guard, not just that a cookie e
     assert.match(source, /isSessionAlive\(\)/);
     assert.doesNotMatch(source, /Cookies\.get\(AUTH_TOKEN_KEY\)/, 'vẫn chỉ kiểm cookie tồn tại');
 });
+
+test('should not lock out a workstation whose clock runs ahead', () => {
+    // Máy nhanh hơn token: đăng nhập thành công ở máy chủ, cookie ghi được (js-cookie tính
+    // Expires theo cùng đồng hồ sai nên vẫn sống), rồi lớp canh route thấy token "hết hạn" và
+    // đá về trang đăng nhập — lặp mãi. Chỉ coi là hết hạn khi lệch quá biên dung sai.
+    const exp = 1_800_000_000; // giây
+    const expMs = exp * 1000;
+    const token = jwt({ exp });
+    // Đồng hồ nhanh 3 tiếng so với hạn token → vẫn phải coi là còn phiên
+    assert.equal(tokenExpiry(token), expMs);
+    const source = readFileSync(new URL('../src/utils/auth.ts', import.meta.url), 'utf8');
+    assert.match(source, /CLOCK_SKEW_MS/, 'chưa có biên dung sai đồng hồ');
+    assert.match(source, /expiry \+ CLOCK_SKEW_MS > now/);
+});

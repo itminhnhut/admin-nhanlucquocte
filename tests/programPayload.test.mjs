@@ -68,3 +68,29 @@ test("should treat content with only empty tags as not written yet", () => {
   assert.equal(isEmptyContent("<p>&nbsp;</p>"), true);
   assert.equal(isEmptyContent("<p>Có chữ</p>"), false);
 });
+
+// ── Xoá ảnh bìa phải thật sự xoá ─────────────────────────────────────────────
+// API nhận cả null và "" cho "không có ảnh" (thử PUT vào id không tồn tại: qua lớp kiểm).
+// PUT là cập nhật một phần, nên bỏ hẳn trường `image` khi sửa = API GIỮ ảnh cũ, mà giao diện
+// vẫn báo "Cập nhật thành công" — người dùng bấm "Xoá ảnh" mãi không được.
+test("should send image null when an existing cover is cleared", () => {
+    const payload = buildProgramPayload({ title: "Điều dưỡng", image: "", active: true }, "<p>x</p>", "dieu-duong-he-trung-cap");
+
+    assert.ok("image" in payload, "sửa mà bỏ hẳn trường image thì API giữ ảnh cũ");
+    assert.equal(payload.image, null);
+    assert.equal(payload.slug, "dieu-duong-he-trung-cap", "slug phải giữ nguyên khi sửa");
+});
+
+test("should keep the cover when editing without touching it", () => {
+    const url = "https://truongdaynghe-rustfs.x2ldh2.easypanel.host/cdn/uploads/a.jpg";
+    const payload = buildProgramPayload({ title: "Điều dưỡng", image: url, active: true }, "<p>x</p>", "dieu-duong-he-trung-cap");
+
+    assert.equal(payload.image, url);
+});
+
+test("should omit image entirely when creating without a cover", () => {
+    const payload = buildProgramPayload({ title: "Ngành mới", image: "", active: true }, "<p>x</p>");
+
+    assert.ok(!("image" in payload), "tạo mới không có ảnh thì payload nên gọn, không gửi null");
+    assert.equal(payload.slug, "nganh-moi");
+});

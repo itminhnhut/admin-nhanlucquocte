@@ -55,3 +55,36 @@ test('should ignore a Retry-After value that makes no sense', () => {
     assert.equal(retryAfterSeconds({ response: { status: 429, headers: { 'retry-after': '-5' } } }), null);
     assert.equal(retryAfterSeconds(undefined), null);
 });
+
+test("should show the wait message even though the server sends its own English one", () => {
+    // Mọi lỗi của API đều kèm `message` (API_DOCS mục 1). Của 429 là tiếng Anh:
+    //   {"message":"Too many requests, please try again later","errorCode":"UNKNOWN_ERROR"}
+    // Nhánh lấy message của server chạy trước thì người dùng không bao giờ thấy câu hướng dẫn.
+    const thatMessage = {
+        response: {
+            status: 429,
+            data: { message: "Too many requests, please try again later", errorCode: "UNKNOWN_ERROR" },
+            headers: { "retry-after": "48" },
+        },
+    };
+    assert.match(apiErrorMessage(thatMessage), /chờ 48 giây/);
+    assert.doesNotMatch(apiErrorMessage(thatMessage), /Too many requests/);
+});
+
+test("should still say to wait when the browser cannot read Retry-After", () => {
+    // Retry-After không nằm trong danh sách header CORS cho đọc sẵn, và API chưa khai
+    // Access-Control-Expose-Headers → trang admin ở tên miền khác KHÔNG thấy header này.
+    // Nên câu mặc định (không số giây) là câu người dùng thực sự nhìn thấy.
+    const khongDocDuoc = {
+        response: { status: 429, data: { message: "Too many requests, please try again later" }, headers: {} },
+    };
+    const msg = apiErrorMessage(khongDocDuoc);
+    assert.match(msg, /quá nhiều lần/);
+    assert.match(msg, /một phút/);
+    assert.doesNotMatch(msg, /mạng/, "không được quy cho lỗi mạng");
+});
+
+test("should still prefer the server message for errors that are not rate limits", () => {
+    const cu = { response: { status: 400, data: { message: "Slug đã tồn tại" } } };
+    assert.equal(apiErrorMessage(cu), "Slug đã tồn tại");
+});

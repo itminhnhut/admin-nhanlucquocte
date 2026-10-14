@@ -90,12 +90,21 @@ export function tokenExpiry(token: string | undefined): number | null {
  * trong máy người dùng vẫn qua được cửa đó, vào app rồi mới bị 401 đá ra.
  * Token đã chết → xoá luôn cho sạch, để lần sau vào thẳng trang đăng nhập.
  */
+/**
+ * Biên dung sai cho đồng hồ máy người dùng. Máy chạy sai giờ không phải chuyện lạ; tin tuyệt
+ * đối vào Date.now() thì máy nhanh hơn 1 ngày sẽ: đăng nhập thành công ở máy chủ, cookie ghi
+ * được (js-cookie tính Expires theo cùng đồng hồ sai nên vẫn sống), rồi lớp canh route thấy
+ * token "đã hết hạn" và đá về trang đăng nhập — lặp vĩnh viễn, không vào được.
+ * Nên chỉ coi là hết hạn khi lệch quá biên này; còn lại để 401 của máy chủ phán xử.
+ */
+const CLOCK_SKEW_MS = 6 * 60 * 60 * 1000;
+
 export function isSessionAlive(now: number = Date.now()): boolean {
     const token = readToken();
     if (!token) return false;
     const expiry = tokenExpiry(token);
     if (expiry === null) return true; // không đọc được hạn → để máy chủ phán xử
-    if (expiry > now) return true;
+    if (expiry + CLOCK_SKEW_MS > now) return true;
     clearSession();
     return false;
 }
