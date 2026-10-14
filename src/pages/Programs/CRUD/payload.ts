@@ -14,8 +14,8 @@ export type ProgramPayload = {
     title: string;
     slug: string;
     description: string;
-    /** Chỉ có mặt khi thật sự có ảnh — API từ chối cả "" lẫn null, chỉ chấp nhận khi vắng hẳn */
-    image?: string;
+    /** Tạo mới: chỉ có mặt khi thật sự có ảnh. Sửa: `null` để xoá ảnh đang có. */
+    image?: string | null;
     content: string;
     active: boolean;
 };
@@ -43,14 +43,17 @@ export function isEmptyContent(html: string): boolean {
  */
 export function buildProgramPayload(values: ProgramFormValues, contentHtml: string, currentSlug?: string): ProgramPayload {
     const title = cleanText(values.title);
-    // API khai image là uri và KHÔNG nhận chuỗi rỗng lẫn null ("Invalid URL" / "expected string,
-    // received null") — không có ảnh thì phải bỏ hẳn trường ra khỏi payload.
     const image = cleanCode(values.image ?? '');
+    const isEdit = Boolean(currentSlug?.trim());
     return {
         title,
         slug: currentSlug?.trim() || createSlugFromTitle(title),
         description: cleanText(values.description ?? ''),
-        ...(image ? { image } : {}),
+        // API nhận cả null và "" cho "không có ảnh" (đã thử PUT vào id không tồn tại: qua được
+        // lớp kiểm). Khi SỬA mà người dùng bấm "Xoá ảnh" thì phải gửi null — PUT là cập nhật
+        // một phần, bỏ hẳn trường thì API GIỮ ảnh cũ mà giao diện vẫn báo thành công.
+        // Khi TẠO thì bỏ hẳn trường cho payload gọn.
+        ...(isEdit ? { image: image || null } : image ? { image } : {}),
         content: stripBase64Images(contentHtml),
         active: values.active,
     };
