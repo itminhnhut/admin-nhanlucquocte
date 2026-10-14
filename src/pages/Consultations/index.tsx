@@ -273,7 +273,9 @@ const ConsultationsPage = () => {
             // Chỉ đưa phần khách viết vào ô sửa; dấu vết đồng ý giữ riêng và nối lại khi lưu
             note: splitConsultationNote(consultation.note).note,
             status: consultation.status || 'PENDING',
-            programId: consultation.programId ? String(consultation.programId) : '',
+            // API trả ngành ở object `program`, KHÔNG có `programId` phẳng (xem schema
+            // ConsultationRequest). Đọc nhầm làm ô "Chương trình quan tâm" luôn trống khi mở đơn.
+            programId: consultation.program?.id ? String(consultation.program.id) : '',
         });
         ensureProgramOption({
             id: consultation.program?.id ?? consultation.programId,
@@ -334,17 +336,19 @@ const ConsultationsPage = () => {
             values.note = `${values.note ?? ''} ${stamp}`.trim();
         }
 
-        const payload: Record<string, string | number | undefined> = {
+        // Cập nhật: xoá trắng ô phải gửi null. Bỏ hẳn trường ra khỏi payload thì API giữ nguyên giá
+        // trị cũ, nên không bao giờ xoá được nội dung nhập nhầm. ConsultationUpdateInput cho phép
+        // null ở đúng 5 trường dưới đây.
+        const payload: Record<string, string | number | null | undefined> = {
             fullName: values.fullName,
             phone: values.phone,
             status: values.status,
+            email: values.email || null,
+            location: values.location || null,
+            currentLevel: values.currentLevel || null,
+            note: values.note || null,
+            programId: values.programId ? Number(values.programId) : null,
         };
-
-        if (values.email) payload.email = values.email;
-        if (values.location) payload.location = values.location;
-        if (values.currentLevel) payload.currentLevel = values.currentLevel;
-        if (values.note) payload.note = values.note;
-        if (values.programId) payload.programId = Number(values.programId);
 
         try {
             await http.put(`admin/consultations/${selectedConsultation.id}`, payload);

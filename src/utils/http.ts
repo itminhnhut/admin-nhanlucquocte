@@ -31,9 +31,14 @@ axiosInstance.interceptors.response.use(
     }) as unknown as (response: AxiosResponse) => AxiosResponse,
     (error) => {
         if (error.response?.status === 401) {
-            clearSession();
-
-            window.location.href = '/auth/cover-login';
+            // 401 của CHÍNH request đăng nhập = sai tài khoản/mật khẩu. Reload ở đây sẽ nạp lại
+            // trang đang đứng và xoá luôn state chứa thông báo lỗi → người dùng thấy trang tự
+            // nhảy mà không hiểu vì sao. Để trang đăng nhập tự hiển thị lỗi.
+            const isLoginRequest = /\/auth\/login$/.test(error.config?.url ?? '');
+            if (!isLoginRequest) {
+                clearSession();
+                window.location.href = '/auth/cover-login';
+            }
         }
 
         if (error.response?.status === 403) {

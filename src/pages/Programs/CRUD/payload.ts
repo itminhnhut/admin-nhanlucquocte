@@ -14,7 +14,8 @@ export type ProgramPayload = {
     title: string;
     slug: string;
     description: string;
-    image: string;
+    /** Chỉ có mặt khi thật sự có ảnh — API từ chối cả "" lẫn null, chỉ chấp nhận khi vắng hẳn */
+    image?: string;
     content: string;
     active: boolean;
 };
@@ -35,13 +36,21 @@ export function isEmptyContent(html: string): boolean {
     return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim() === '';
 }
 
-export function buildProgramPayload(values: ProgramFormValues, contentHtml: string): ProgramPayload {
+/**
+ * @param currentSlug slug đang có của ngành khi sửa. Giữ nguyên slug cũ là bắt buộc: slug nằm trong
+ *   địa chỉ trang công khai, tính lại theo tiêu đề thì đổi tiêu đề là đổi URL, mọi liên kết cũ và
+ *   kết quả Google trỏ vào trang đó thành 404.
+ */
+export function buildProgramPayload(values: ProgramFormValues, contentHtml: string, currentSlug?: string): ProgramPayload {
     const title = cleanText(values.title);
+    // API khai image là uri và KHÔNG nhận chuỗi rỗng lẫn null ("Invalid URL" / "expected string,
+    // received null") — không có ảnh thì phải bỏ hẳn trường ra khỏi payload.
+    const image = cleanCode(values.image ?? '');
     return {
         title,
-        slug: createSlugFromTitle(title),
+        slug: currentSlug?.trim() || createSlugFromTitle(title),
         description: cleanText(values.description ?? ''),
-        image: cleanCode(values.image ?? ''),
+        ...(image ? { image } : {}),
         content: stripBase64Images(contentHtml),
         active: values.active,
     };

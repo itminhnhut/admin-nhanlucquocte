@@ -3,7 +3,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { refreshSitemap } from "../src/utils/sitemap.ts";
 
-const URL = "https://vietuchcm.edu.vn/sitemap/refresh?key=TEST";
+const URL = "https://trungcapnhanlucquocte.vn/sitemap/refresh?key=TEST";
 
 test("should send a no-cors GET to the refresh url", async (t) => {
   const fetchMock = t.mock.method(globalThis, "fetch", async () => new Response());

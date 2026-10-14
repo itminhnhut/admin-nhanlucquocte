@@ -156,6 +156,21 @@ const PreviewDrawer = ({
     );
 };
 
+/**
+ * Danh mục bài viết. Trước đây ô này dùng DANH SÁCH NGÀNH và lưu TÊN ngành vào `category` — sai
+ * mục đích của trường đó, lại hỏng ngay khi đổi tên ngành (ô danh mục hiện trống, lưu lại là mất
+ * category). Ngành liên quan đã có ô riêng bên dưới (`programIds`).
+ *
+ * Giá trị phải khớp đúng chữ website đang lọc: trang Du học lấy bài có category === "du học"
+ * (src/ssr/initialDataForPath.ts bên repo website). Thêm danh mục mới thì báo bên website.
+ */
+const POST_CATEGORIES = [
+    { value: 'tin tức', label: 'Tin tức' },
+    { value: 'du học', label: 'Du học' },
+    { value: 'tuyển sinh', label: 'Tuyển sinh' },
+    { value: 'hoạt động', label: 'Hoạt động học viên' },
+];
+
 const NewsForm = () => {
     const navigate = useNavigate();
     const { id } = useParams<{ id: string }>(); // Lấy ID từ URL
@@ -320,22 +335,31 @@ const NewsForm = () => {
         setLoading(true);
 
         const title = (values.title || '').trim();
-        const slug = createSlugFromTitle(title);
+        // Sửa bài thì GIỮ slug cũ: slug nằm trong URL công khai, tính lại theo tiêu đề là đổi tiêu
+        // đề thành đổi URL, mọi liên kết cũ và kết quả Google trỏ vào bài đó thành 404.
+        const slug = (isEditMode && (values.slug || '').trim()) || createSlugFromTitle(title);
 
         // Sanitize editor content to strip base64 images
         const cleanedContent = stripBase64Images(value2);
 
-        const payload = cleanPayload({
-            title,
-            slug,
+        // cleanPayload chạy cleanText, mà cleanText gộp MỌI khoảng trắng kể cả xuống dòng thành một
+        // dấu cách → nội dung bài là HTML nên khối mã nguồn (<pre>) mất hết thụt đầu dòng.
+        // Chỉ làm sạch các ô chữ ngắn; content và image ghép vào sau.
+        const image = (values.image || '').trim();
+        const payload = {
+            ...cleanPayload({
+                title,
+                slug,
+                summary: values.summary,
+                category: values.category,
+            }),
             content: cleanedContent,
-            image: values.image,
-            summary: values.summary,
-            category: values.category,
             programIds: values.programIds,
             isHot: values.isHot,
             published: values.published ?? true,
-        });
+            // API khai image là uri và từ chối cả "" lẫn null → không có ảnh thì bỏ hẳn trường
+            ...(image ? { image } : {}),
+        };
 
         try {
             if (isEditMode) {

@@ -1,12 +1,17 @@
 // Lưu và xoá phiên đăng nhập. Tách riêng khỏi trang để test được và để mọi nơi
 // dùng chung một bộ tuỳ chọn cookie, không mỗi chỗ một kiểu.
 import Cookies from 'js-cookie';
+import { rateLimitMessage } from './apiError.ts';
 
 export const AUTH_TOKEN_KEY = 'auth_token';
 export const ADMIN_INFO_KEY = 'admin_info';
 
-/** Hết hạn sau 7 ngày, buộc đăng nhập lại thay vì giữ phiên vô thời hạn */
-const EXPIRES_DAYS = 7;
+/**
+ * Khớp đúng tuổi của token: API cấp JWT sống 1 ngày và KHÔNG có endpoint làm mới
+ * (API_DOCS mục 1). Để cookie 7 ngày thì 6 ngày sau đó người dùng vẫn được cho vào app,
+ * rồi request đầu tiên trả 401 và bị đá về trang đăng nhập — trông như "không đăng nhập được".
+ */
+const EXPIRES_DAYS = 1;
 
 export type AdminInfo = {
     fullName?: string;
@@ -39,6 +44,9 @@ export function pickAdminInfo(admin: unknown): AdminInfo {
 /** Câu báo lỗi đúng với nguyên nhân: sai mật khẩu khác hẳn mất mạng hay máy chủ lỗi */
 export function loginErrorMessage(error: unknown): string {
     const status = (error as { response?: { status?: number } })?.response?.status;
+    // API chặn 10 lần đăng nhập mỗi phút. Trước đây 429 rơi xuống nhánh cuối và báo
+    // "không kết nối được máy chủ" — người dùng đi tìm lỗi mạng thay vì chờ một phút.
+    if (status === 429) return rateLimitMessage(error);
     if (status === 401 || status === 400) return 'Sai tên đăng nhập hoặc mật khẩu.';
     if (status === 403) return 'Tài khoản này không có quyền vào trang quản trị.';
     if (typeof status === 'number' && status >= 500) return 'Máy chủ đang lỗi. Vui lòng thử lại sau ít phút.';
@@ -54,6 +62,42 @@ export function saveSession(token: string, admin: unknown, isHttps: boolean) {
 export function clearSession() {
     Cookies.remove(AUTH_TOKEN_KEY, { path: '/' });
     Cookies.remove(ADMIN_INFO_KEY, { path: '/' });
+}
+
+/** Đọc token đang lưu (chưa kiểm còn sống hay không) */
+export function readToken(): string | undefined {
+    return Cookies.get(AUTH_TOKEN_KEY);
+}
+
+/**
+ * Hạn của JWT, đọc từ phần payload. Trả null khi token không đọc được.
+ * Chỉ để biết token đã chết hay chưa — KHÔNG phải xác thực; chữ ký vẫn do máy chủ kiểm.
+ */
+export function tokenExpiry(token: string | undefined): number | null {
+    if (!token) return null;
+    const payload = token.split('.')[1];
+    if (!payload) return null;
+    try {
+        const json = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
+        return typeof json?.exp === 'number' ? json.exp * 1000 : null;
+    } catch {
+        return null;
+    }
+}
+
+/**
+ * Phiên còn dùng được không. Chỉ xem cookie có tồn tại là chưa đủ: cookie cũ 7 ngày còn nằm
+ * trong máy người dùng vẫn qua được cửa đó, vào app rồi mới bị 401 đá ra.
+ * Token đã chết → xoá luôn cho sạch, để lần sau vào thẳng trang đăng nhập.
+ */
+export function isSessionAlive(now: number = Date.now()): boolean {
+    const token = readToken();
+    if (!token) return false;
+    const expiry = tokenExpiry(token);
+    if (expiry === null) return true; // không đọc được hạn → để máy chủ phán xử
+    if (expiry > now) return true;
+    clearSession();
+    return false;
 }
 
 export function readAdminInfo(): AdminInfo | null {

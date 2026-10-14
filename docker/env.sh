@@ -19,8 +19,8 @@ JS_ENV_FILE="/usr/share/nginx/html/env-config.js"
 echo "[env-inject] Injecting runtime environment variables..."
 
 # ── Giá trị mặc định (fallback nếu EasyPanel không set) ──────────────────────
-# Chưa có backend → để trống, BẮT BUỘC set VITE_API_URL trên EasyPanel
-VITE_API_URL="${VITE_API_URL:-}"
+# API của trường. EasyPanel set biến môi trường thì giá trị đó thắng.
+VITE_API_URL="${VITE_API_URL:-https://api.trungcapnhanlucquocte.vn/api/}"
 VITE_APP_URL="${VITE_APP_URL:-https://admin.trungcapnhanlucquocte.vn}"
 VITE_SITEMAP_REFRESH_URL="${VITE_SITEMAP_REFRESH_URL:-}"
 

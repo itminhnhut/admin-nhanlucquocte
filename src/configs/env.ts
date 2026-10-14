@@ -28,9 +28,10 @@ function getEnv(key: string, defaultValue = ""): string {
   return defaultValue;
 }
 
-/** Base URL của API Backend */
-// Để trống chủ ý: chưa có backend của trường. Thiếu env → request lỗi rõ ràng,
-// KHÔNG được mặc định trỏ sang API của trường khác (sẽ sửa dữ liệu thật của họ).
+/** Base URL của API Backend của trường */
+// Không đặt giá trị mặc định ở đây: giá trị phải đến từ .env (dev) hoặc window.__ENV__
+// do docker/env.sh chèn (deploy). Thiếu env thì request lỗi rõ ràng, chứ không được
+// âm thầm trỏ sang API của trường khác.
 export const API_URL = getEnv("VITE_API_URL");
 
 /** Public URL của Admin App */
