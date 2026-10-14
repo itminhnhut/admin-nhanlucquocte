@@ -6,9 +6,9 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Copy dependency files first (layer cache)
-COPY package.json yarn.lock ./
+COPY package.json package-lock.json ./
 
-RUN yarn install --frozen-lockfile
+RUN npm ci
 
 # Copy source
 COPY . .
@@ -17,7 +17,7 @@ COPY . .
 ENV VITE_API_URL=__VITE_API_URL__
 ENV VITE_APP_URL=__VITE_APP_URL__
 
-RUN yarn build
+RUN npm run build
 
 # ─────────────────────────────────────────────
 # Stage 2: Production (Nginx)
