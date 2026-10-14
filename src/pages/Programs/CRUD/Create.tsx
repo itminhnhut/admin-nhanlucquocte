@@ -29,6 +29,8 @@ function ProgramForm() {
     const [editorKey, setEditorKey] = useState(0);
     const [fetching, setFetching] = useState(isEditMode);
     const [saving, setSaving] = useState(false);
+    /** slug đang có của ngành (chỉ dùng khi sửa) */
+    const [currentSlug, setCurrentSlug] = useState('');
     const [coverUploading, setCoverUploading] = useState(false);
     const [contentUploading, setContentUploading] = useState(false);
 
@@ -51,8 +53,9 @@ function ProgramForm() {
         dispatch(setPageTitle(isEditMode ? 'Sửa ngành đào tạo' : 'Thêm ngành đào tạo'));
     }, [dispatch, isEditMode]);
 
-    // API chưa có đường lấy một ngành theo id, nên lấy cả danh sách rồi tìm.
-    // Danh mục chỉ vài chục dòng nên không đáng ngại.
+    // API có GET /admin/programs/{id} nhưng ở đây vẫn lấy cả danh sách: danh mục chỉ vài chục
+    // dòng, và lấy một lần cũng là dữ liệu dùng cho ô chọn ngành liên quan. Đổi sang lấy theo id
+    // thì nhớ bỏ cả noPaginate bên dưới.
     useEffect(() => {
         if (!isEditMode || !id) return;
         let cancelled = false;
@@ -67,6 +70,7 @@ function ProgramForm() {
                     navigate('/programs');
                     return;
                 }
+                setCurrentSlug(program.slug ?? '');
                 setValue('title', program.title ?? '');
                 setValue('description', program.description ?? '');
                 setValue('image', program.image ?? '');
@@ -124,7 +128,9 @@ function ProgramForm() {
         }
         setSaving(true);
         try {
-            const payload = buildProgramPayload(values, contentHtml);
+            // Sửa ngành thì GIỮ slug cũ: slug nằm trong URL công khai, đổi tiêu đề mà đổi luôn
+            // slug là mọi liên kết cũ và kết quả Google trỏ vào trang đó thành 404.
+            const payload = buildProgramPayload(values, contentHtml, isEditMode ? currentSlug : undefined);
             if (isEditMode) await http.put(`admin/programs/${id}`, payload);
             else await http.post('admin/programs', payload);
             refreshSitemap(SITEMAP_REFRESH_URL);

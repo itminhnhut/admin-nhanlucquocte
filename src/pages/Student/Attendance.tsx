@@ -39,7 +39,9 @@ type AttendanceFormValues = {
 };
 
 /** Thông tin học viên hiện ở đầu trang điểm danh */
-type StudentInfo = { fullName: string; studentCode?: string; className?: string; email?: string; phone?: string; cccd?: string };
+// API trả tên lớp ở trường `class` (xem schema Student), form thì gửi lên bằng `className`.
+// Đọc cả hai để không phụ thuộc phía nào đổi trước.
+type StudentInfo = { fullName: string; studentCode?: string; className?: string; class?: string; email?: string; phone?: string; cccd?: string };
 
 /** Tham số gửi lên API khi lấy danh sách */
 type QueryParams = Record<string, string | number | boolean | undefined>;
@@ -56,7 +58,9 @@ const Attendance = () => {
     const [studentInfo, setStudentInfo] = useState<{
         fullName: string;
         studentCode?: string;
+        /** API trả tên lớp ở `class`; `className` chỉ là tên dùng khi GỬI lên */
         className?: string;
+        class?: string;
         email?: string;
         phone?: string;
         cccd?: string;
@@ -221,10 +225,10 @@ const PAGE_SIZES = [10];
                                         <td className="px-4 py-2">{studentInfo.cccd}</td>
                                     </tr>
                                 )}
-                                {studentInfo.className && (
+                                {(studentInfo.className || studentInfo.class) && (
                                     <tr className="border-b border-gray-100 dark:border-gray-700">
                                         <td className="px-4 py-2 font-semibold">Lớp</td>
-                                        <td className="px-4 py-2">{studentInfo.className}</td>
+                                        <td className="px-4 py-2">{studentInfo.className || studentInfo.class}</td>
                                     </tr>
                                 )}
                                 {studentInfo.email && (

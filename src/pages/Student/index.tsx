@@ -37,7 +37,8 @@ type Student = {
     email: string;
     // phone: string;
     createdAt?: string;
-    degrees?: unknown[];
+    /** API trả kèm trong danh sách học viên: mảng rỗng = chưa cấp bằng */
+    degrees?: { id: number; yearOfGrad?: number }[];
     isDegree?: boolean;
 };
 
@@ -144,10 +145,32 @@ const StudentsTables = () => {
                 params,
             });
 
+            // API trả kèm `degrees` (id, yearOfGrad) trong danh sách học viên — mảng rỗng nghĩa là
+            // chưa cấp bằng. Cột "Tốt nghiệp" và nút "Xem bằng" dựa vào đây.
+            // Nếu một bản API nào đó không trả trường này thì phải hỏi riêng, chứ coi như "chưa có
+            // bằng" là sai: nhân viên sẽ cấp trùng bằng cho cùng một học viên.
+            const hasDegreeField = res.data.some((student) => Array.isArray(student.degrees));
+            let studentIdsWithDegree = new Set<number>();
+            if (!hasDegreeField && res.data.length > 0) {
+                try {
+                    const pageStudentIds = new Set(res.data.map((student) => student.id));
+                    const degreeRes = await http.get<{ data?: { studentId?: number | null }[] }>('admin/degrees', {
+                        params: { noPaginate: true },
+                    });
+                    studentIdsWithDegree = new Set(
+                        (degreeRes.data ?? [])
+                            .map((degree) => degree.studentId)
+                            .filter((studentId): studentId is number => typeof studentId === 'number' && pageStudentIds.has(studentId)),
+                    );
+                } catch (error) {
+                    console.error('Không lấy được danh sách văn bằng để đánh dấu học viên đã tốt nghiệp:', error);
+                }
+            }
+
             const students = res.data.map((student) => {
                 return {
                     ...student,
-                    isDegree: student.degrees?.length > 0,
+                    isDegree: Array.isArray(student.degrees) ? student.degrees.length > 0 : studentIdsWithDegree.has(student.id),
                 };
             });
 
