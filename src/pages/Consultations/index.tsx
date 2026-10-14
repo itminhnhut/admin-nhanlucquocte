@@ -474,6 +474,23 @@ const ConsultationsPage = () => {
                                     ),
                                 },
                                 {
+                                    // Ba thông tin này trước đây nằm lẫn trong ô ghi chú dưới dạng dòng xám
+                                    // nhỏ, và `location` thì không hiện ở đâu. Tách thành cột riêng: đây
+                                    // đúng là thứ nhân viên tuyển sinh cần để gọi lại cho đúng người.
+                                    key: 'program',
+                                    title: 'Nguyện vọng',
+                                    className: 'min-w-[200px]',
+                                    render: ({ program, currentLevel, location }) => (
+                                        <InfoCell
+                                            rows={[
+                                                [{ value: program?.title, strong: true }],
+                                                [{ label: 'Trình độ', value: currentLevel }],
+                                                [{ label: 'Nơi ở', value: location, copy: true }],
+                                            ]}
+                                        />
+                                    ),
+                                },
+                                {
                                     key: 'status',
                                     title: 'Trạng thái',
                                     sortable: true,
@@ -489,12 +506,11 @@ const ConsultationsPage = () => {
                                     key: 'note',
                                     title: 'Nội dung cần tư vấn',
                                     className: 'min-w-[240px] max-w-[380px] whitespace-normal',
-                                    render: ({ note, currentLevel, program }) => {
+                                    render: ({ note }) => {
                                         const { note: text, hasConsent, consentAt } = splitConsultationNote(note);
                                         return (
                                             <div className="space-y-1">
                                                 <p className="text-[13px] leading-relaxed text-slate-700">{text || <span className="text-slate-400">không ghi chú</span>}</p>
-                                                {(currentLevel || program?.title) && <p className="text-xs text-slate-500">{[program?.title, currentLevel].filter(Boolean).join(' · ')}</p>}
                                                 {hasConsent && (
                                                     <p className="text-[11px] text-slate-400" title={`Đồng ý chính sách bảo vệ dữ liệu cá nhân lúc ${consentAt}`}>
                                                         ✓ đã đồng ý chính sách
