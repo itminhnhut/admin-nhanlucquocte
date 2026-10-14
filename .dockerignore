@@ -1,0 +1,22 @@
+# node_modules của máy dev là bản biên dịch cho hệ điều hành khác (esbuild, swc…).
+# COPY . . mà không chặn thì nó ghi đè đúng thư mục vừa cài trong image Linux → build hỏng.
+node_modules
+npm-debug.log*
+
+# Kết quả build, tạo lại trong image
+dist
+
+# Không cần trong image, chỉ làm nặng và phá layer cache
+.git
+.github
+.gitignore
+.env
+.env.local
+.env.*.local
+.DS_Store
+coverage
+tests
+.vscode
+.idea
+*.md
+!README.md
